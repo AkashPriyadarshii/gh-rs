@@ -21,13 +21,35 @@ pub enum RepoArgs {
         #[arg(long, help = "Create as public (default: private)")]
         public: bool,
     },
-    /// List your repositories (first page only)
-    List,
-    /// Show repository details
-    View {
-        /// owner/repo
-        repo: String,
+    /// List your repositories (newest push first)
+    List {
+        /// Max rows (1-100, default 30)
+        #[arg(long)]
+        limit: Option<u32>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
     },
+    /// Show repository details (default: current repo from git origin)
+    View {
+        /// owner/repo (default: from git origin)
+        repo: Option<String>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+/// Print value as pretty JSON on --json, else run the plain-text renderer.
+fn emit_json<T: serde::Serialize>(value: &T, as_json: bool, text: impl FnOnce() -> String) {
+    if as_json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(value).unwrap_or_default()
+        );
+    } else {
+        print!("{}", text());
+    }
 }
 
 pub async fn run(args: RepoArgs) -> Result<(), AppError> {
@@ -49,10 +71,17 @@ pub async fn run(args: RepoArgs) -> Result<(), AppError> {
             println!("Created {} ({vis}): {}", r.full_name, r.html_url);
             Ok(())
         }
-        RepoArgs::List => {
-            let repos = api::list().await?;
+        RepoArgs::List { limit, json } => {
+            let repos = api::list(api::clamp_limit(limit)).await?;
             if repos.is_empty() {
                 println!("No repositories found.");
+                return Ok(());
+            }
+            if json {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&repos).unwrap_or_default()
+                );
                 return Ok(());
             }
             for r in &repos {
@@ -63,10 +92,13 @@ pub async fn run(args: RepoArgs) -> Result<(), AppError> {
             }
             Ok(())
         }
-        RepoArgs::View { repo } => {
-            let (owner, name) = split_repo(&repo)?;
+        RepoArgs::View { repo, json } => {
+            let (owner, name) = match repo.as_deref() {
+                Some(r) => split_repo(r)?,
+                None => git::current_repo()?,
+            };
             let r = api::view(&owner, &name).await?;
-            print!("{}", render::repository(&r));
+            emit_json(&r, json, || render::repository(&r));
             Ok(())
         }
     }

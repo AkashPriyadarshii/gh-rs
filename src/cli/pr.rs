@@ -34,6 +34,12 @@ pub enum PrArgs {
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
+        /// Max rows (1-100, default 30)
+        #[arg(long)]
+        limit: Option<u32>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
     },
     /// Show pull request details
     View {
@@ -42,6 +48,9 @@ pub enum PrArgs {
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
     },
     /// Show the unified diff
     Diff {
@@ -104,11 +113,15 @@ pub async fn run(args: PrArgs) -> Result<(), AppError> {
             );
             Ok(())
         }
-        PrArgs::List { repo } => {
+        PrArgs::List { repo, limit, json } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
-            let prs = api::list(&owner, &name).await?;
+            let prs = api::list(&owner, &name, crate::github::repo::clamp_limit(limit)).await?;
             if prs.is_empty() {
                 println!("No open pull requests in {owner}/{name}.");
+                return Ok(());
+            }
+            if json {
+                println!("{}", serde_json::to_string_pretty(&prs).unwrap_or_default());
                 return Ok(());
             }
             for pr in prs {
@@ -123,10 +136,14 @@ pub async fn run(args: PrArgs) -> Result<(), AppError> {
             }
             Ok(())
         }
-        PrArgs::View { number, repo } => {
+        PrArgs::View { number, repo, json } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
             let pr = api::view(&owner, &name, number).await?;
-            print!("{}", render::pull_request(&pr));
+            if json {
+                println!("{}", serde_json::to_string_pretty(&pr).unwrap_or_default());
+            } else {
+                print!("{}", render::pull_request(&pr));
+            }
             Ok(())
         }
         PrArgs::Diff { number, repo } => {
