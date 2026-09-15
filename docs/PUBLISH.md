@@ -1,6 +1,6 @@
 # PUBLISH — private → public checklist
 
-Repo is private, always publish-ready. Run this checklist before any visibility flip. Do NOT flip without explicit user "go" — a pushed public repo is irreversible.
+COMPLETED Sep 15 2026: repo flipped public, tag v0.1.0 pushed. Checklist below preserved as the record. Social preview upload deferred (owner click, About settings).
 
 ## Before flip
 1. **Secrets** — `rg "GH_RS_TEST_TOKEN|password|token" .` — no test tokens, no personal URLs in source, docs, or commit history.

@@ -35,4 +35,4 @@ Installed at ~/.agents/skills/ (global). Read SKILL.md before first use.
 PRD.md → what/why. ARCHITECTURE.md → stack/layout/flow. TASKS.md → current sprint.
 
 ## Repo status
-Private now, publish-ready at any time. Security rules above are the reason — keep them strict. See docs/PUBLISH.md before any visibility flip.
+Public since v0.1.0 (Sep 2026). Security rules above are the reason — keep them strict.

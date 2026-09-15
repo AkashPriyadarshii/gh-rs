@@ -26,5 +26,5 @@ Learn Rust via a real, useful tool instead of toy exercises. Full parity with `g
 - Ships as 3 sprints, not one big-bang release
 
 ## Constraints
-- ₹0 budget, GitHub API free tier only (5000 req/hr authenticated — plenty for 1 user)
-- Dev machine: Windows 11, 8GB RAM
+- GitHub API free tier only (5000 req/hr authenticated)
+- Targets: Windows + macOS

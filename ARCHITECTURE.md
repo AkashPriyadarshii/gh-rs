@@ -58,7 +58,7 @@ src/
 
 ## Gotchas
 - octocrab needs a tokio runtime even for one sequential call — use `current_thread` flavor
-- keyring backend differs per OS — Windows first, macOS once hardware exists
+- keyring backend differs per OS — Windows Credential Manager + macOS Keychain via OS-native backends
 - Projects V2 / some GraphQL-only data isn't in octocrab's typed models — use GraphQL escape hatch, comment why per call
 - OAuth device flow needs a registered OAuth App `client_id` (public, secret-less — safe to publish, same as gh does). Register "gh-rs" once before Sprint 1
 - Doc comments only on non-obvious code (device flow, escape hatches) — not every public fn
