@@ -12,6 +12,7 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 
 **GitHub CLI in Rust. Four commands. No bloat.**
 
+[![CI](https://github.com/AkashPriyadarshii/gh-rs/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/AkashPriyadarshii/gh-rs/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?style=flat-square)](https://www.rust-lang.org)
 
