@@ -1,8 +1,17 @@
 //! gh-rs — GitHub CLI in Rust (v0.1).
-//! Entry point: clap parse happens in Sprint 1; S0 is scaffold only.
 
+mod cli;
 mod error;
+mod git;
+mod github;
 
-fn main() {
-    println!("gh-rs v0.1 scaffold — CLI dispatch lands in Sprint 1");
+use clap::Parser;
+
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
+    let args = cli::Cli::parse();
+    if let Err(e) = cli::run(args).await {
+        eprintln!("gh-rs: {e}");
+        std::process::exit(1);
+    }
 }
