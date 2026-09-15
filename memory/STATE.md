@@ -1,7 +1,7 @@
 # STATE — gh-rs
 
 ## Current
-Phase: Sprint 0 complete (code + docs + CI). Blocked on OAuth App registration (manual, needs browser). Ready for Sprint 1.
+Phase: Sprint 0 complete. Ready for Sprint 1 (device flow round-trip first).
 
 ## Progress
 - [x] S0 setup: cargo init (edition 2021), deps, error.rs, ci.yml, LICENSE, .gitignore, docs
@@ -9,8 +9,8 @@ Phase: Sprint 0 complete (code + docs + CI). Blocked on OAuth App registration (
 - [ ] S2 pr: not started
 - [ ] S3 issue: not started
 
-## OAuth App — pending (only S0 blocker)
-Register public OAuth App at https://github.com/settings/developers → OAuth Apps → New. Name `gh-rs`, Homepage URL any (e.g. https://github.com/AkashPriyadarshii/gh-rs), Authorization callback URL: http://localhost (device flow ignores it). Scope `repo`. Then supply `client_id` → hardcode as constant.
+## OAuth App — DONE
+Registered: `gh-rs`, client_id `Ov23liNghdlHihgqbM5V` (public by design). Device flow enabled. Scope requested at login: `repo`. client_id goes into `github/client.rs` as a constant in Sprint 1. Ignore the client secret — not needed for device flow, never store it.
 
 ## Decisions locked
 - Plain text output v0.1 (no TUI/pager)
