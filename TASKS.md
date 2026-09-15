@@ -23,8 +23,8 @@
 - [ ] **CHECKPOINT — honest review:** does `gh-rs auth` + `gh-rs repo` feel better than `gh` daily? Yes → continue to Sprint 2. No → ship S1 as portfolio piece, call it v0.1, stop.
 
 ## Sprint 2 — pr
-- [ ] pr create / list / view / diff / merge
-- [ ] Tests
+- [x] pr create / list / view / diff / merge — live-tested end-to-end (private gh-pr-test-1: create → list → view → diff → squash-merge → list-empty; invalid method guard; scratch repo deleted)
+- [x] Tests
 
 ## Sprint 3 — issue
 - [ ] issue create / list / view / close
