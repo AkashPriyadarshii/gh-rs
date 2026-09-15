@@ -41,16 +41,19 @@ pub async fn create(
         "base": base,
         "body": body,
     });
-    let resp: PullRequest = client
+    let resp = client
         .post(url)
         .bearer_auth(token)
         .json(&body)
         .send()
-        .await?
-        .error_for_status()?
-        .json()
         .await?;
-    Ok(resp)
+    let status = resp.status();
+    if !status.is_success() {
+        let detail = resp.text().await.unwrap_or_default();
+        return Err(AppError::GitHubApi(format!("{status}: {detail}")));
+    }
+    let pr: PullRequest = resp.json().await?;
+    Ok(pr)
 }
 
 pub async fn merge(

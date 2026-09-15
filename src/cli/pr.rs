@@ -10,7 +10,7 @@ use octocrab::params::pulls::MergeMethod;
 
 #[derive(Subcommand)]
 pub enum PrArgs {
-    /// Create a pull request (head = current branch, base = default branch)
+    /// Create a pull request (head = current branch or --head, base = --base or repo default)
     Create {
         /// Title
         #[arg(long)]
@@ -18,6 +18,12 @@ pub enum PrArgs {
         /// Body
         #[arg(long)]
         body: Option<String>,
+        /// Head branch (default: current git branch)
+        #[arg(long)]
+        head: Option<String>,
+        /// Base branch (default: repo default branch)
+        #[arg(long)]
+        base: Option<String>,
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
@@ -59,17 +65,34 @@ pub enum PrArgs {
 
 pub async fn run(args: PrArgs) -> Result<(), AppError> {
     match args {
-        PrArgs::Create { title, body, repo } => {
+        PrArgs::Create {
+            title,
+            body,
+            head,
+            base,
+            repo,
+        } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
-            let head = git::current_branch()?;
-            if head.is_empty() {
-                return Err(AppError::InvalidInput(
-                    "detached HEAD — checkout a branch before `pr create`".into(),
-                ));
-            }
-            let base = crate::github::repo::view(&owner, &name)
-                .await?
-                .default_branch;
+            let head = match head {
+                Some(h) => h,
+                None => {
+                    let b = git::current_branch()?;
+                    if b.is_empty() {
+                        return Err(AppError::InvalidInput(
+                            "detached HEAD — pass --head explicitly".into(),
+                        ));
+                    }
+                    b
+                }
+            };
+            let base = match base {
+                Some(b) => b,
+                None => {
+                    crate::github::repo::view(&owner, &name)
+                        .await?
+                        .default_branch
+                }
+            };
             let pr = api::create(&owner, &name, &title, &head, &base, body.as_deref()).await?;
             println!(
                 "Created #{} {} → {}/{}",
