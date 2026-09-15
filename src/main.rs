@@ -4,6 +4,7 @@ mod cli;
 mod error;
 mod git;
 mod github;
+mod render;
 
 use clap::Parser;
 
