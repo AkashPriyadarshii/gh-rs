@@ -1,6 +1,6 @@
 # PUBLISH — private → public checklist
 
-COMPLETED Sep 15 2026: repo flipped public, tag v0.1.0 pushed. Checklist below preserved as the record. Social preview upload deferred (owner click, About settings).
+COMPLETED Sep 15 2026: repo flipped public, tag v0.1.0 pushed, published to crates.io (`cargo install gh-rs`). Checklist below preserved as the record. Social preview upload deferred (owner click, About settings).
 
 ## Before flip
 1. **Secrets** — `rg "GH_RS_TEST_TOKEN|password|token" .` — no test tokens, no personal URLs in source, docs, or commit history.
@@ -21,3 +21,4 @@ gh repo edit --visibility public
 1. Fresh clone, `cargo build --release` on Windows — clean.
 2. `gh-rs auth login` + one real command round-trip from the fresh machine.
 3. Confirm GitHub repo has no accidental private data (unpushed refs, artifacts).
+4. Published to crates.io: `cargo publish` → `gh-rs v0.1.0` live. Installable via `cargo install gh-rs`.

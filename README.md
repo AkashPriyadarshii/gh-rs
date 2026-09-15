@@ -12,13 +12,14 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 
 **GitHub CLI in Rust. Four commands. No bloat.**
 
+[![Crates.io](https://img.shields.io/crates/v/gh-rs.svg?style=flat-square)](https://crates.io/crates/gh-rs)
 [![CI](https://github.com/AkashPriyadarshii/gh-rs/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/AkashPriyadarshii/gh-rs/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?style=flat-square)](https://www.rust-lang.org)
 
-*Built by [Akash Priyadarshi](https://github.com/AkashPriyadarshii)*
+*Built by [Akash Priyadarshi](https://github.com/AkashPriyadarshii) · [Website](https://akashpriyadarshii.github.io/gh-rs/)*
 
-[Why](#why) · [Quickstart](#quickstart) · [Commands](#commands) · [Benchmarks](#benchmarks) · [Architecture](#architecture) · [Non-goals](#non-goals)
+[Why](#why) · [Install](#install) · [Quickstart](#quickstart) · [Commands](#commands) · [Benchmarks](#benchmarks) · [Architecture](#architecture) · [Non-goals](#non-goals)
 
 </div>
 
@@ -29,16 +30,25 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 - **You want a fast binary.** 12.4 MB. `--help` in ~50ms.
 - **You want JSON for agents.** Every list/view takes `--json`. Pipe it to `jq`.
 - **You want your token out of dotfiles.** Device flow puts it in the OS keychain. Nothing lands in `~/.config`.
-- **You want readable code.** ~12 files. Each command is one `cli/` module plus one `github/` module.
+- **You want readable code.** ~15 files. Each command is one `cli/` module plus one `github/` module.
+
+## Install
+
+```sh
+# From crates.io
+cargo install gh-rs
+
+# Or build from source
+git clone https://github.com/AkashPriyadarshii/gh-rs
+cd gh-rs
+cargo build --release
+```
 
 ## Quickstart
 
 ```sh
-git clone https://github.com/AkashPriyadarshii/gh-rs
-cd gh-rs
-cargo build --release
-./target/release/gh-rs auth login
-./target/release/gh-rs repo list
+gh-rs auth login
+gh-rs repo list
 ```
 
 ```
@@ -48,7 +58,7 @@ AkashPriyadarshii/autoform-pro           private JavaScript     2026-09-15T05:33
 ```
 
 ```sh
-./target/release/gh-rs repo view AkashPriyadarshii/kharcha
+gh-rs repo view AkashPriyadarshii/kharcha
 ```
 
 ```
