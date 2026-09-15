@@ -9,8 +9,8 @@ Phase: Sprint 1 complete — auth + repo live-verified (device flow, keyring, li
 - [ ] S2 pr: not started
 - [ ] S3 issue: not started
 
-## Not live-tested
-- repo create (side effect on account — needs one manual run)
+## Live-tested
+- repo create: ✓ private-by-default, view/list/clone verified, test repo deleted. Note: deletion used system `gh` — repo delete is not a v0.1 command.
 
 ## Decisions locked
 - Plain text output v0.1 (no TUI/pager)
