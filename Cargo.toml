@@ -2,6 +2,12 @@
 name = "gh-rs"
 version = "0.1.0"
 edition = "2021"
+description = "Small GitHub CLI in Rust: keychain auth, repo/pr/issue commands, JSON output"
+license = "MIT"
+repository = "https://github.com/AkashPriyadarshii/gh-rs"
+keywords = ["github", "cli", "git", "devtools", "command-line"]
+categories = ["command-line-utilities"]
+exclude = ["site/", ".github/"]
 
 [profile.release]
 strip = true
