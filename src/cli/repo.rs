@@ -72,7 +72,10 @@ pub async fn run(args: RepoArgs) -> Result<(), AppError> {
     }
 }
 
-fn split_repo(s: &str) -> Result<(String, String), AppError> {
+/// Shared owner/repo splitter. pr/issue `--repo` flags reuse this (async `resolve`
+/// would need a tokio runtime in tests — keep it sync). Rejects empty segments
+/// (`foo/`, `/bar`, `norepo`) so typos fail fast instead of 404ing on clean URLs.
+pub fn split_repo(s: &str) -> Result<(String, String), AppError> {
     match s.split_once('/') {
         Some((o, n)) if !o.is_empty() && !n.is_empty() => Ok((o.to_string(), n.to_string())),
         _ => Err(AppError::InvalidInput(format!(

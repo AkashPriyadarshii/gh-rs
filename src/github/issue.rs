@@ -21,6 +21,8 @@ pub struct IssueSummary {
     pub comments: u64,
     #[serde(rename = "user")]
     pub user: IssueUser,
+    /// Present on PRs (the /issues endpoint returns both). Filtered in list().
+    pub pull_request: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize, Debug, Default)]
@@ -37,7 +39,11 @@ pub async fn list(owner: &str, repo: &str) -> Result<Vec<IssueSummary>, AppError
             None::<&()>,
         )
         .await?;
-    Ok(issues)
+    // /issues mixes PRs into the response — drop anything carrying pull_request.
+    Ok(issues
+        .into_iter()
+        .filter(|i| i.pull_request.is_none())
+        .collect())
 }
 
 pub async fn view(owner: &str, repo: &str, number: u64) -> Result<IssueSummary, AppError> {
@@ -103,5 +109,13 @@ mod tests {
         assert_eq!(parsed.number, 3);
         assert_eq!(parsed.user.login, "akash");
         assert_eq!(parsed.state, "open");
+        assert!(parsed.pull_request.is_none());
+    }
+
+    #[test]
+    fn pr_payload_detected() {
+        let json = r#"{"number":4,"title":"PR","state":"open","comments":0,"user":{"login":"akash"},"pull_request":{"url":"https://api.github.com/x"}}"#;
+        let parsed: IssueSummary = serde_json::from_str(json).unwrap();
+        assert!(parsed.pull_request.is_some());
     }
 }
