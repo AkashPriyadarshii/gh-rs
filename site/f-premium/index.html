@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gh-rs — the GitHub CLI in Rust</title>
+<meta name="description" content="gh-rs: a 12.4 MB GitHub CLI in Rust. Keychain auth, repo/pr/issue commands, JSON for agents, plain text for humans.">
+<link rel="icon" href="../assets/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#FAF8F3; --pearl:#F1EDE3; --card:#FFFFFF; --ink:#1A1C1E;
+  --body:#4E4A42; --muted:#8A8474; --hairline:#E4DED1;
+  --clay:#B8422E; --clay-deep:#93331F; --tint:#F7E4DC;
+  --term:#141412; --term-hair:#2A2A26; --term-text:#ECE7D9; --gold:#C99700;
+  --success:#0C6049;
+  --ease:cubic-bezier(0.23,1,0.32,1);
+  --grot:"Space Grotesk",system-ui,sans-serif;
+  --sys:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--canvas);color:var(--ink);font-family:var(--sys);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::selection{background:var(--clay);color:#fff}
+.rail{background:var(--tint);border-bottom:1px solid var(--hairline);font-family:var(--mono);font-size:12px;color:var(--clay-deep)}
+.rail .in{max-width:1160px;margin:0 auto;padding:9px 28px;text-align:center}
+.rail a{color:var(--clay-deep);font-weight:700}
+.nav{position:sticky;top:0;z-index:20;background:rgba(250,248,243,.8);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-bottom:1px solid var(--hairline)}
+.nav .in{max-width:1160px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:12px}
+.mark{width:28px;height:28px;background:var(--ink);color:#FAF8F3;font-family:var(--mono);font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px}
+.name{font-family:var(--grot);font-weight:700;font-size:17px;letter-spacing:-.01em}
+.ver{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--hairline);border-radius:20px;padding:2px 10px;background:var(--card)}
+.nav nav{margin-left:auto;display:flex;gap:24px;align-items:center}
+.nav nav a{color:var(--body);text-decoration:none;font-size:14px;font-weight:500}
+.nav nav a:hover{color:var(--ink)}
+.nav nav a.cta{background:var(--clay);color:#fff;font-weight:600;padding:9px 20px;border-radius:8px}
+.nav nav a.cta:hover{background:var(--clay-deep)}
+.nav nav a.cta:active{transform:scale(.97)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+.hero{display:grid;grid-template-columns:1.02fr .98fr;gap:60px;align-items:center;padding:88px 0 80px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--clay)}
+.hero h1{font-family:var(--grot);font-size:clamp(42px,5.4vw,72px);font-weight:700;line-height:1.0;letter-spacing:-.035em;margin:20px 0 20px}
+.hero .lede{font-size:18px;color:var(--body);max-width:26em}
+.hero .lede strong{color:var(--ink)}
+.cta-row{display:flex;gap:14px;margin-top:30px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--clay);color:#fff;border:0;border-radius:8px;padding:14px 28px;font-size:15px;font-weight:600;font-family:var(--sys);cursor:pointer;transition:transform 120ms ease-out,background 150ms ease-out}
+.btn:hover{background:var(--clay-deep)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--hairline)}
+.linklike{color:var(--clay);text-decoration:none;font-weight:500;font-size:15px}
+.mini{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:18px}
+.mini b{color:var(--body)}
+.shot{background:var(--card);border:1px solid var(--hairline);border-radius:22px;padding:18px;box-shadow:0 24px 60px -30px rgba(26,28,30,.25)}
+.shell{background:var(--term);border-radius:14px;overflow:hidden}
+.shell .bar{display:flex;gap:7px;padding:13px 18px;border-bottom:1px solid var(--term-hair);align-items:center}
+.shell .bar i{width:11px;height:11px;border-radius:50%;background:#3a382f;display:block}
+.shell .bar span{font-family:var(--mono);font-size:11px;color:#8a8474;margin-left:8px}
+.shell .body{padding:22px 24px;font-family:var(--mono);font-size:13.5px;line-height:2;color:var(--term-text)}
+.shell .d{color:#8a8474} .shell .c{color:#e0684e} .shell .g{color:var(--gold)}
+.strip{background:var(--card);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.strip .in{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);padding:0 28px}
+.cell{padding:26px 24px 26px 0;border-left:1px solid var(--hairline);padding-left:24px}
+.cell:first-child{border-left:0;padding-left:0}
+.cell .v{font-family:var(--mono);font-weight:700;font-size:22px}
+.cell .v.w{color:var(--clay)}
+.cell .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+section{padding:112px 0 0}
+.band-pearl{background:var(--pearl);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);margin-top:112px;padding:112px 0}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--clay);margin-bottom:16px}
+h2{font-family:var(--grot);font-size:clamp(30px,3.2vw,38px);font-weight:600;letter-spacing:-.02em;line-height:1.12;margin-bottom:12px}
+.sub{color:var(--body);max-width:40em;margin-bottom:44px;font-size:17px}
+.feat{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}
+.feat .row2{display:grid;grid-template-columns:.85fr 1.15fr;gap:20px;grid-column:1/-1}
+.fcard{background:var(--card);border:1px solid var(--hairline);border-radius:22px;padding:36px}
+.fcard .n{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.12em}
+.fcard h3{font-family:var(--grot);font-size:23px;font-weight:600;letter-spacing:-.01em;margin:12px 0 10px}
+.fcard p{color:var(--body);font-size:15px;max-width:30em}
+.fcard pre{margin-top:20px;background:var(--term);border-radius:12px;padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.8;color:var(--term-text);overflow-x:auto}
+.fcard pre .d{color:#8a8474} .fcard pre .c{color:#e0684e} .fcard pre .g{color:var(--gold)}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.vs .col{border:1px solid var(--hairline);border-radius:22px;padding:36px;background:var(--card)}
+.vs .col.rs{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+.vs .col .t{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.vs .col.rs .t{color:var(--gold)}
+.vs .col .big{font-family:var(--grot);font-size:28px;font-weight:600;letter-spacing:-.01em;margin:14px 0 6px}
+.vs ul{list-style:none;padding:0;margin-top:14px}
+.vs li{font-family:var(--mono);font-size:13px;padding:7px 0;border-top:1px solid var(--hairline);color:var(--body)}
+.vs .col.rs li{border-color:#33352f;color:#c9c2b2}
+.vs li b{color:var(--ink)} .vs .col.rs li b{color:#fff}
+.termsec{background:var(--card);border:1px solid var(--hairline);border-radius:22px;padding:40px}
+.tabs{display:flex;gap:8px;margin:26px 0 20px;flex-wrap:wrap}
+.tabs button{background:var(--canvas);border:1px solid var(--hairline);color:var(--body);font-family:var(--mono);font-size:12.5px;padding:9px 22px;border-radius:20px;cursor:pointer;transition:color 150ms ease-out,border-color 150ms ease-out,background 150ms ease-out}
+.tabs button[aria-selected="true"]{background:var(--clay);border-color:var(--clay);color:#fff}
+.pane{display:none}
+.pane.on{display:block;animation:fade 200ms var(--ease)}
+@keyframes fade{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}
+.pane pre{background:var(--term);border-radius:12px;padding:22px 24px;font-family:var(--mono);font-size:13.5px;line-height:1.9;color:var(--term-text);overflow-x:auto}
+.pane .d{color:#8a8474} .pane .c{color:#e0684e} .pane .g{color:var(--gold)}
+.pane .cp{margin-top:14px}
+.pane .cp button{background:var(--canvas);border:1px solid var(--hairline);color:var(--ink);font-family:var(--mono);font-size:12px;padding:8px 18px;border-radius:8px;cursor:pointer}
+table.bench{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--hairline);border-radius:22px;overflow:hidden;font-size:14px}
+table.bench th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--card)}
+table.bench td{padding:15px 22px;border-bottom:1px solid var(--hairline);font-family:var(--mono);font-size:13px;color:var(--body);background:var(--card)}
+table.bench tr:last-child td{border-bottom:0}
+table.bench td.w{color:var(--success);font-weight:700}
+.arch{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+.arch pre{background:var(--ink);color:#e8e2d4;border-radius:22px;padding:30px;font-family:var(--mono);font-size:13px;line-height:1.9;overflow-x:auto}
+.arch pre .d{color:#8a8474}
+.refuse{background:var(--card);border:1px solid var(--hairline);border-radius:22px;padding:30px 34px}
+.refuse h3{font-family:var(--grot);font-size:20px;margin-bottom:14px}
+.refuse li{list-style:none;font-size:14px;color:var(--body);padding:7px 0 7px 30px;position:relative}
+.refuse li::before{content:"—";position:absolute;left:6px;color:var(--clay)}
+.band{margin:112px 0 0;background:var(--ink);color:var(--canvas);border-radius:22px;padding:72px 40px;text-align:center}
+.band h2{color:#fff}
+.band p{margin:12px auto 30px;max-width:30em;font-size:17px;color:#c9c2b2}
+.band .row{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+.band code{font-family:var(--mono);font-size:13.5px;background:#2a2b26;padding:14px 22px;border-radius:8px;max-width:100%;overflow-x:auto;color:#ece7d9}
+.band button{background:var(--clay);color:#fff;border:0;border-radius:8px;padding:14px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sys)}
+.band button:hover{background:var(--clay-deep)}
+.band button:active{transform:scale(.97)}
+footer{padding:64px 0 72px;color:var(--muted);font-size:14px}
+footer .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
+footer h4{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;color:var(--ink)}
+footer a{color:var(--body);display:block;text-decoration:none;font-size:14px;margin:7px 0}
+footer a:hover{color:var(--clay)}
+footer .me{font-family:var(--mono);font-size:12px}
+footer .me strong{color:var(--ink)}
+:focus-visible{outline:2px solid var(--clay);outline-offset:2px}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.strip .in{grid-template-columns:1fr 1fr}.feat,.feat .row2,.vs,.arch{grid-template-columns:1fr}.band{padding:52px 24px}}
+@media(max-width:640px){.nav nav a:not(.cta){display:none}.strip .in{grid-template-columns:1fr}footer .cols{grid-template-columns:1fr}}
+@media(hover:hover) and (pointer:fine){.linklike:hover{text-decoration:underline}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pane.on{animation:none}}
+@media(prefers-reduced-transparency:reduce){.nav{background:var(--canvas)}}
+</style>
+</head>
+<body>
+<div class="rail"><div class="in">v0.1.0 tagged · CI passing on master · MIT · <a href="https://github.com/AkashPriyadarshii/gh-rs">Star on GitHub →</a></div></div>
+<header class="nav"><div class="in">
+<span class="mark">&gt;_</span><span class="name">gh-rs</span><span class="ver">v0.1.0</span>
+<nav><a href="#feat">Why</a><a href="#vs">Compare</a><a href="#cmds">Commands</a><a href="#bench">Benchmarks</a><a class="cta" href="https://github.com/AkashPriyadarshii/gh-rs">GitHub</a></nav>
+</div></header>
+<div class="wrap">
+<div class="hero">
+<div>
+<div class="eyebrow">GitHub CLI · Rust · MIT</div>
+<h1>Four commands. No bloat.</h1>
+<p class="lede">gh-rs is a <strong>12.4&nbsp;MB</strong> GitHub CLI: device-flow auth into the OS keychain, <strong>repo · pr · issue</strong> with JSON for agents and plain text for humans.</p>
+<div class="cta-row">
+<button class="btn" id="cpHero" type="button">Install gh-rs</button>
+<a class="linklike" href="https://github.com/AkashPriyadarshii/gh-rs">Read the source →</a>
+</div>
+<p class="mini"><b>13</b> tests green · <b>0</b> tokens in files · <b>15</b> source files · backtraces kept</p>
+</div>
+<div class="shot"><div class="shell">
+<div class="bar"><i></i><i></i><i></i><span>akash — zsh</span></div>
+<div class="body">
+<span class="d">$</span> <span class="c">cargo install --git https://github.com/AkashPriyadarshii/gh-rs</span><br>
+<span class="d">$</span> gh-rs auth login <span class="d"># device flow → keychain</span><br>
+<span class="d">$</span> gh-rs repo list --limit 3<br>
+<span class="g">AkashPriyadarshii/repomap</span> <span class="d">public · Go</span><br>
+<span class="g">AkashPriyadarshii/zcat</span> <span class="d">public · Zig</span><br>
+<span class="d">$</span> gh-rs pr list --json <span class="d">| jq '.[].number'</span>
+</div>
+</div></div>
+</div>
+</div>
+<div class="strip"><div class="in">
+<div class="cell"><div class="v w">49ms</div><div class="k">--help startup</div></div>
+<div class="cell"><div class="v">12.4MB</div><div class="k">binary size</div></div>
+<div class="cell"><div class="v w">~10%</div><div class="k">pr list faster</div></div>
+<div class="cell"><div class="v">--json</div><div class="k">every list + view</div></div>
+<div class="cell"><div class="v">0</div><div class="k">tokens in files</div></div>
+</div></div>
+<div class="wrap">
+<section id="feat">
+<div class="kicker">Why gh-rs</div>
+<h2>Small tool, presented properly.</h2>
+<p class="sub">gh does everything. gh-rs does four things and shows its work: real numbers, real output, real file tree.</p>
+<div class="feat">
+<div class="fcard"><div class="n">01 / STARTUP + SIZE</div><h3>A binary that respects your machine.</h3><p>Strip plus LTO lands 12.4 MB. --help answers in ~50ms because there is no runtime to warm. Built and tested on the 8GB Windows box it ships from.</p><pre>gh      <span class="d">40.7 MB · 102ms --help</span>
+gh-rs   <span class="c">12.4 MB ·  49ms --help</span></pre></div>
+<div class="fcard"><div class="n">02 / AGENTS</div><h3>JSON where it counts.</h3><p>Every list and view takes --json. Pipe straight to jq.</p><pre>pr list --json <span class="d">| jq '.[].n'</span>
+<span class="g">12  14  19</span></pre></div>
+<div class="row2">
+<div class="fcard"><div class="n">03 / AUTH</div><h3>Token out of dotfiles.</h3><p>Device flow stores in Credential Manager / Keychain. Status prints validity, never the secret.</p></div>
+<div class="fcard"><div class="n">04 / CODE</div><h3>Fifteen files. One error enum.</h3><p>Each command is one cli/ module plus one github/ module. System git for clone fidelity.</p></div>
+</div>
+</div>
+</section>
+<section id="vs">
+<div class="kicker">Honest comparison</div>
+<h2>gh vs gh-rs, no cherry-picking.</h2>
+<p class="sub">Windows 11, release build, 3 runs each, network included. ~700ms per command is TLS plus API round trip on both sides.</p>
+<div class="vs">
+<div class="col"><div class="t">gh 2.93.0 · 40.7 MB</div><div class="big">does everything</div><ul>
+<li><b>actions</b> · releases · gists · search</li>
+<li><b>extensions</b> · codespaces · projects</li>
+<li><b>40.7 MB</b> · 102ms --help</li>
+<li>token in <b>plaintext helpers</b></li>
+</ul></div>
+<div class="col rs"><div class="t">gh-rs v0.1.0 · 12.4 MB</div><div class="big">does four things</div><ul>
+<li><b>auth</b> · device flow → keychain</li>
+<li><b>repo · pr · issue</b> · --json</li>
+<li><b>12.4 MB</b> · 49ms --help</li>
+<li><b>15 files</b> · one error enum</li>
+</ul></div>
+</div>
+</section>
+</div>
+<div class="band-pearl"><div class="wrap">
+<div class="kicker">Commands</div>
+<h2>Four groups. --help tells the truth.</h2>
+<p class="sub">--json on list/view only. Mutating commands speak plain text. --limit 1–100, default 30, one per_page request.</p>
+<div class="termsec" id="cmds">
+<div class="tabs" role="tablist">
+<button role="tab" aria-selected="true" data-t="q-auth" type="button">auth</button>
+<button role="tab" aria-selected="false" data-t="q-repo" type="button">repo</button>
+<button role="tab" aria-selected="false" data-t="q-pr" type="button">pr</button>
+<button role="tab" aria-selected="false" data-t="q-issue" type="button">issue</button>
+</div>
+<div class="pane on" id="q-auth"><pre><span class="d">$ gh-rs auth login</span>     <span class="d"># browser code → OS keychain</span>
+<span class="d">$ gh-rs auth status</span>    <span class="g">→ ok</span>
+<span class="d">$ gh-rs auth logout</span>    <span class="d"># credential deleted</span></pre><div class="cp"><button data-cmd="gh-rs auth login" type="button">COPY</button></div></div>
+<div class="pane" id="q-repo"><pre><span class="d">$ gh-rs repo list --limit 3 [--json]</span>   <span class="d"># newest push first</span>
+<span class="d">$ gh-rs repo view [owner/repo]</span>          <span class="d"># bare = git origin</span>
+<span class="d">$ gh-rs repo create demo</span>               <span class="d"># private unless --public</span>
+<span class="d">$ gh-rs repo clone owner/repo [dir]</span>    <span class="d"># Bearer header auth</span></pre><div class="cp"><button data-cmd="gh-rs repo list --limit 3" type="button">COPY</button></div></div>
+<div class="pane" id="q-pr"><pre><span class="d">$ gh-rs pr create --title T --head feat --base main</span>
+<span class="g">→ #12 opened</span>
+<span class="d">$ gh-rs pr list / view / diff 12</span>       <span class="d"># diff = raw text</span>
+<span class="d">$ gh-rs pr merge 12 --method squash</span>     <span class="d"># merge|squash|rebase</span></pre><div class="cp"><button data-cmd='gh-rs pr create --title "T"' type="button">COPY</button></div></div>
+<div class="pane" id="q-issue"><pre><span class="d">$ gh-rs issue create --title T --body B [--repo o/r]</span>
+<span class="g">→ #7 opened</span>
+<span class="d">$ gh-rs issue list / view 7 [--json]</span>
+<span class="d">$ gh-rs issue close 7</span></pre><div class="cp"><button data-cmd="gh-rs issue list --json" type="button">COPY</button></div></div>
+</div>
+</div></div>
+<div class="wrap">
+<section id="bench">
+<div class="kicker">Benchmarks</div>
+<h2>Startup and size win. Latency ties.</h2>
+<p class="sub">Re-run Sep 2026 after the strip/LTO profile. gh-rs wins where a CLI can win; the network washes the rest.</p>
+<table class="bench">
+<tr><th>command</th><th>gh 2.93.0</th><th>gh-rs v0.1</th></tr>
+<tr><td>auth status</td><td>699–768ms</td><td class="w">622–766ms · tie</td></tr>
+<tr><td>repo view</td><td>684–749ms</td><td>783–798ms · noise</td></tr>
+<tr><td>pr list</td><td>706–812ms</td><td class="w">636–723ms · ~10%</td></tr>
+<tr><td>issue list</td><td>714–877ms</td><td class="w">741–752ms · tie</td></tr>
+<tr><td>--help, no network</td><td>102–105ms</td><td class="w">49–65ms · ~2x</td></tr>
+<tr><td>binary</td><td>40.7 MB</td><td class="w">12.4 MB</td></tr>
+</table>
+</section>
+<section id="arch">
+<div class="kicker">Under the hood</div>
+<h2>Fifteen files. No magic.</h2>
+<p class="sub">Octocrab typed pulls, raw REST where models overflow the stack, system git for clone fidelity.</p>
+<div class="arch">
+<pre>src/main.rs       <span class="d"># tokio current_thread entry</span>
+src/error.rs      <span class="d"># AppError — every fallible path returns it</span>
+src/cli/          <span class="d"># auth repo pr issue — args + dispatch</span>
+src/github/       <span class="d"># client auth repo pr issue — API layer</span>
+src/git.rs        <span class="d"># subprocess, Bearer extraHeader</span>
+src/render.rs     <span class="d"># plain-text view renderers</span></pre>
+<div class="refuse"><h3>v0.1 refuses</h3><ul>
+<li>actions, releases, gists, search — full parity ≈ 65 solo-weeks, cut</li>
+<li>TUI or pager — plain text, no exceptions</li>
+<li>pagination past --limit 100 — single per_page request</li>
+<li>--jq engine, JSON on mutating commands</li>
+<li>panic=abort — backtraces beat ~1MB</li>
+</ul></div>
+</div>
+</section>
+<div class="band">
+<h2>Run your first command.</h2>
+<p>cargo install, auth login, repo list. Thirty seconds.</p>
+<div class="row"><code>cargo install --git https://github.com/AkashPriyadarshii/gh-rs</code><button id="cpBand" type="button">Copy install</button></div>
+</div>
+<footer>
+<div class="cols">
+<div><h4>Ecosystem</h4><a href="https://github.com/AkashPriyadarshii/design-genius">design-genius</a><a href="https://github.com/AkashPriyadarshii/akash-design-engineering">akash-design-engineering</a><a href="https://github.com/AkashPriyadarshii/tdlib-android">tdlib-android</a><a href="https://github.com/AkashPriyadarshii/kharcha">kharcha</a></div>
+<div><h4>Author</h4><a href="https://github.com/AkashPriyadarshii">GitHub</a><a href="https://akashpriyadarshi.vercel.app">Portfolio</a><a href="https://linkedin.com/in/akash-priyadarshi-1aa51b37a">LinkedIn</a><a href="https://akashpriyadarshii.github.io/Resume/">Resume</a></div>
+<div><h4>Social</h4><a href="https://x.com/Akash__ydv001">X / Twitter</a><a href="https://www.threads.com/@free_dev2026">Threads</a><a href="https://www.instagram.com/akash.priyadarshii/">Instagram</a><a href="https://reddit.com/user/DragonfruitWeak2801">Reddit</a></div>
+</div>
+<p class="me"><strong>Akash Priyadarshi</strong> · Patna, Bihar, India · MIT · v0.1.0 · Rust CLI for GitHub: auth, repos, pull requests, issues. Small on purpose.</p>
+</footer>
+</div>
+<script>
+(function(){
+var cmd='cargo install --git https://github.com/AkashPriyadarshii/gh-rs';
+function cp(txt,btn){navigator.clipboard.writeText(txt).then(function(){var o=btn.textContent;btn.textContent='COPIED';setTimeout(function(){btn.textContent=o},1400)})}
+document.getElementById('cpHero').addEventListener('click',function(){cp(cmd,this)});
+document.getElementById('cpBand').addEventListener('click',function(){cp(cmd,this)});
+document.querySelectorAll('[data-cmd]').forEach(function(b){b.addEventListener('click',function(){cp(b.dataset.cmd,b)})});
+document.querySelectorAll('.tabs button').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-selected','false')});
+    btn.setAttribute('aria-selected','true');
+    document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on')});
+    document.getElementById(btn.dataset.t).classList.add('on');
+  });
+});
+})();
+</script>
+</body>
+</html>
