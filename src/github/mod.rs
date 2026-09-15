@@ -4,4 +4,5 @@
 pub mod auth;
 pub mod client;
 
+pub mod pr;
 pub mod repo;

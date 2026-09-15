@@ -1,6 +1,7 @@
 //! CLI: clap definitions + dispatch. One module per command group.
 
 pub mod auth;
+pub mod pr;
 pub mod repo;
 
 use crate::error::AppError;
@@ -25,11 +26,17 @@ pub enum Command {
         #[command(subcommand)]
         command: repo::RepoArgs,
     },
+    /// Manage pull requests
+    Pr {
+        #[command(subcommand)]
+        command: pr::PrArgs,
+    },
 }
 
 pub async fn run(cli: Cli) -> Result<(), AppError> {
     match cli.command {
         Command::Auth { command } => auth::run(command).await,
         Command::Repo { command } => repo::run(command).await,
+        Command::Pr { command } => pr::run(command).await,
     }
 }
