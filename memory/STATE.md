@@ -10,6 +10,11 @@ Phase: v0.1 complete — auth + repo + pr + issue all live-verified, audit batch
 - pr view merged render: [Open] → squash-merge → [Merged] ✓
 - issue close + scratch repo deleted (404-confirmed)
 
+## Icon log (Sep 15 2026)
+- Nothing-style mark: OLED tile, dot-matrix `>_`, one yellow cursor pixel (badge accent)
+- `assets/icon.svg` source + PNG 16/32/96/256/512 + `favicon.ico`; README header wired (96px)
+- Pixel-verified: chevron/underscore off-white, cursor #EAB308, tile #0A0A0A
+
 ## Final batch log (Sep 15 2026, --json/--limit/repo ergonomics)
 - 13 tests pass (clamp_limit 5 cases, summary serialize), clippy -D clean
 - repo view bare inside kharcha clone → header correct ✓

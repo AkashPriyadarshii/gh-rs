@@ -9,7 +9,7 @@ Repo is private, always publish-ready. Run this checklist before any visibility 
 4. **Docs** — README install/usage/feature list current; CHANGELOG-style sprint history in TASKS.md is accurate.
 5. **License** — LICENSE file present, copyright line correct.
 6. **Tag** — v0.1.0 tagged at a green commit (CI passing).
-7. **Repo metadata** — `gh repo edit` description (formula: what + for whom + stack + features), topics (fill to ~20), homepage if any.
+7. **Repo metadata** — `gh repo edit` description (formula: what + for whom + stack + features), topics (fill to ~20), homepage if any, social preview image (`assets/icon-512.png` via About settings).
 8. `.gitignore` committed — target/ never in history.
 
 ## Flip
