@@ -158,7 +158,7 @@ footer .me strong{color:var(--ink)}
 <div class="shot"><div class="shell">
 <div class="bar"><i></i><i></i><i></i><span>akash — zsh</span></div>
 <div class="body">
-<span class="d">$</span> <span class="c">cargo install --git https://github.com/AkashPriyadarshii/gh-rs</span><br>
+<span class="d">$</span> <span class="c">cargo install gh-rs</span><br>
 <span class="d">$</span> gh-rs auth login <span class="d"># device flow → keychain</span><br>
 <span class="d">$</span> gh-rs repo list --limit 3<br>
 <span class="g">AkashPriyadarshii/repomap</span> <span class="d">public · Go</span><br>
@@ -277,7 +277,7 @@ src/render.rs     <span class="d"># plain-text view renderers</span></pre>
 <div class="band">
 <h2>Run your first command.</h2>
 <p>cargo install, auth login, repo list. Thirty seconds.</p>
-<div class="row"><code>cargo install --git https://github.com/AkashPriyadarshii/gh-rs</code><button id="cpBand" type="button">Copy install</button></div>
+<div class="row"><code>cargo install gh-rs</code><button id="cpBand" type="button">Copy install</button></div>
 </div>
 <footer>
 <div class="cols">
@@ -290,7 +290,7 @@ src/render.rs     <span class="d"># plain-text view renderers</span></pre>
 </div>
 <script>
 (function(){
-var cmd='cargo install --git https://github.com/AkashPriyadarshii/gh-rs';
+var cmd='cargo install gh-rs';
 function cp(txt,btn){navigator.clipboard.writeText(txt).then(function(){var o=btn.textContent;btn.textContent='COPIED';setTimeout(function(){btn.textContent=o},1400)})}
 document.getElementById('cpHero').addEventListener('click',function(){cp(cmd,this)});
 document.getElementById('cpBand').addEventListener('click',function(){cp(cmd,this)});
