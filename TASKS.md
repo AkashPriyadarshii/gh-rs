@@ -2,7 +2,7 @@
 
 ## Sprint 0 — setup
 - [x] `cargo init`, add clap/octocrab/tokio/keyring/serde via `cargo add`
-- [ ] Register "gh-rs" OAuth App (public client_id, scope `repo`) — blocks Sprint 1
+- [x] Register "gh-rs" OAuth App (public client_id, scope `repo`) — client_id Ov23liNghdlHihgqbM5V
 - [x] error.rs: AppError enum
 - [x] .gitignore (target/, *.log, .env), LICENSE (MIT, copyright line)
 - [x] .github/workflows/ci.yml: fmt --check, clippy -D warnings, test on every push
