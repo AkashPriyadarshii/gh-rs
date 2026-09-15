@@ -15,7 +15,7 @@
 - [x] auth logout
 - [x] auth status (state: ok/expired/revoked via GET /user)
 - [x] repo clone <owner/repo>
-- [x] repo create <name> — coded, not live-tested (side effect on account)
+- [x] repo create <name> — live-tested: private-by-default ✓ view ✓ list ✓ clone ✓, cleanup via gh repo delete
 - [x] repo list
 - [x] repo view <owner/repo>
 - [x] Tests: serde decode units + #[ignore] keyring round-trip + missing-auth
