@@ -1,0 +1,15 @@
+/target
+*.log
+.env
+
+# local skill copies (installed globally at ~/.agents/skills/ — never commit copies)
+/.agents/
+/.claude/
+/skills/
+/.skills/
+
+# Added by cargo
+#
+# already existing elements were commented out
+
+#/target
