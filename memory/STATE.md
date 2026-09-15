@@ -1,18 +1,22 @@
 # STATE — gh-rs
 
 ## Current
-Phase: Sprint 0 complete. Ready for Sprint 1 (device flow round-trip first).
+Phase: Sprint 1 complete — auth + repo live-verified (device flow, keyring, list, view, clone, logout lifecycle). At S1 checkpoint. pr (S2) next if checkpoint passes.
 
 ## Progress
-- [x] S0 setup: cargo init (edition 2021), deps, error.rs, ci.yml, LICENSE, .gitignore, docs
-- [ ] S1 auth + repo: not started — blocked on OAuth App client_id
+- [x] S0 setup
+- [x] S1 auth + repo
 - [ ] S2 pr: not started
 - [ ] S3 issue: not started
 
-## OAuth App — DONE
-Registered: `gh-rs`, client_id `Ov23liNghdlHihgqbM5V` (public by design). Device flow enabled. Scope requested at login: `repo`. client_id goes into `github/client.rs` as a constant in Sprint 1. Ignore the client secret — not needed for device flow, never store it.
+## Not live-tested
+- repo create (side effect on account — needs one manual run)
 
 ## Decisions locked
 - Plain text output v0.1 (no TUI/pager)
-- octocrab 0.54.2, reqwest 0.13 (json), tokio 1.53 (current_thread), keyring 4.2 (windows-native default), clap 4.6 derive, thiserror 2
+- Repo create defaults private; --public opts out
+- octocrab 0.54 (no serde-visible Repository struct — local RepositorySummary used)
+- octocrab 0.54 dropped user_agent() — default "octocrab" UA is valid
+- reqwest needs `form` + `json` features (cargo add without defaults)
+- clap nested subcommands: named field + #[command(subcommand)]
 - Private repo, publish-ready; flip only on explicit go

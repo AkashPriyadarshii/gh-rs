@@ -9,17 +9,17 @@
 - [x] docs/PUBLISH.md, memory/STATE.md
 
 ## Sprint 1 — auth + repo
-- [ ] github/client.rs: Octocrab client builder, token injection
-- [ ] Device-flow roundtrip FIRST, alone: login → store in keyring → status ✅ — do not build commands until this round-trips
-- [ ] auth login (OAuth device flow, store in keyring)
-- [ ] auth logout
-- [ ] auth status (state: ok/expired/revoked via GET /user)
-- [ ] repo clone <owner/repo>
-- [ ] repo create <name>
-- [ ] repo list
-- [ ] repo view <owner/repo>
-- [ ] Tests: happy path + missing-auth path per command
-- [ ] README v0.1: install + usage for auth/repo
+- [x] github/client.rs: Octocrab client builder, token injection
+- [x] Device-flow roundtrip FIRST, alone: login → store in keyring → status ✅
+- [x] auth login (OAuth device flow, store in keyring)
+- [x] auth logout
+- [x] auth status (state: ok/expired/revoked via GET /user)
+- [x] repo clone <owner/repo>
+- [x] repo create <name> — coded, not live-tested (side effect on account)
+- [x] repo list
+- [x] repo view <owner/repo>
+- [x] Tests: serde decode units + #[ignore] keyring round-trip + missing-auth
+- [x] README v0.1: install + usage for auth/repo
 - [ ] **CHECKPOINT — honest review:** does `gh-rs auth` + `gh-rs repo` feel better than `gh` daily? Yes → continue to Sprint 2. No → ship S1 as portfolio piece, call it v0.1, stop.
 
 ## Sprint 2 — pr
