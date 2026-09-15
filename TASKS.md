@@ -30,7 +30,7 @@
 - [x] issue create / list / view / close — live-tested end-to-end (private gh-issue-test-1: create #1-5 → list → view → close all → list-empty; 404 guard on nonexistent; scratch repo deleted)
 - [x] Tests
 - [x] README final pass (usage + benchmarks)
-- [ ] tag v0.1.0
+- [x] tag v0.1.0 (pushed Sep 15 2026)
 
 ## Audit batch (post-S3 review)
 - [x] issue list filters PRs (pull_request key) — live-verified on gh-verify-audit (#1 shown, PR #2 excluded)

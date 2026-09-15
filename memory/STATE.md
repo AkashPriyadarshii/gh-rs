@@ -1,7 +1,7 @@
 # STATE — gh-rs
 
 ## Current
-Phase: v0.1 complete — auth + repo + pr + issue all live-verified, audit batch applied + live-verified on scratch gh-verify-audit (deleted, 404-confirmed). Benchmarks re-run Sep 2026 on release profile (12.4 MB). Next: tag v0.1.0 + publish-readiness sweep on explicit go.
+Phase: v0.1.0 tagged + pushed (Sep 15 2026). Repo PUBLIC. Icon set shipped (README header renders, social preview deferred to owner click). Next: fresh-clone build check + README polish review.
 
 ## Verify log (Sep 15 2026, post-audit)
 - fmt + clippy -D warnings + 11 tests pass, cargo doc zero warnings
