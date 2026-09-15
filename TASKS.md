@@ -27,6 +27,6 @@
 - [x] Tests
 
 ## Sprint 3 — issue
-- [ ] issue create / list / view / close
-- [ ] Tests
+- [x] issue create / list / view / close — live-tested end-to-end (private gh-issue-test-1: create #1-5 → list → view → close all → list-empty; 404 guard on nonexistent; scratch repo deleted)
+- [x] Tests
 - [ ] README final pass, tag v0.1.0
