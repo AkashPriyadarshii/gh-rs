@@ -10,6 +10,15 @@ Phase: v0.1 complete — auth + repo + pr + issue all live-verified, audit batch
 - pr view merged render: [Open] → squash-merge → [Merged] ✓
 - issue close + scratch repo deleted (404-confirmed)
 
+## Final batch log (Sep 15 2026, --json/--limit/repo ergonomics)
+- 13 tests pass (clamp_limit 5 cases, summary serialize), clippy -D clean
+- repo view bare inside kharcha clone → header correct ✓
+- repo list --limit 2 --json parses; order pushed DESC (repomap/zcat/autoform top) ✓
+- --limit 500 clamps to 100 (38 rows = full account) ✓
+- issue/pr --json shapes parse (number/title/keys) ✓
+- PR-filter holds with live PR present (issue list shows only #1) ✓
+- scratch gh-json-probe deleted (404-confirmed)
+
 ## Progress
 - [x] S0 setup
 - [x] S1 auth + repo

@@ -43,5 +43,13 @@
 - [x] Cargo [profile.release]: strip/lto/cgu=1 (14.4 → 12.4 MB); panic=abort rejected (backtraces)
 - [x] STATE.md synced; benchmarks re-run Sep 2026 (honest: API latency wash, startup/size wins)
 
+## v0.1 final batch (--json / --limit / repo ergonomics)
+- [x] --json on repo/pr/issue list+view (Serialize on summaries, octocrab PullRequest already Serialize; pretty print; live-verified gh-json-probe: issue/pr/repo shapes parse)
+- [x] --limit on repo/pr/issue list (clamp_limit 1-100 default 30; single per_page request; live: --limit 2/5/500→100 rows)
+- [x] repo view bare positional defaults to git origin (live-verified inside kharcha clone)
+- [x] repo list sort=pushed DESC (API) + local belt-and-braces sort; newest repo surfaces first
+- [x] ponytail markers: no cursor pagination (all three lists), ps-argv clone note kept
+- [x] README usage + flags documented
+
 ## Deferred to v0.2 (explicitly rejected for v0.1)
-- repo view optional positional; repo list sort/limit; --json output; 80%+ coverage + GH_RS_TEST_TOKEN harness
+- Full cursor pagination (Link-header walker); --jq engine; JSON on mutating cmds; panic=abort; 80%+ coverage + GH_RS_TEST_TOKEN harness

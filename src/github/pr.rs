@@ -6,14 +6,15 @@ use octocrab::models::pulls::PullRequest;
 use octocrab::params::pulls::MergeMethod;
 use serde_json::json;
 
-pub async fn list(owner: &str, repo: &str) -> Result<Vec<PullRequest>, AppError> {
+/// Single-page open-PR list. `per_page` = clamped --limit (max 100).
+/// ponytail: no cursor pagination — octocrab Page exposes next, wire it when PRs exceed 100.
+pub async fn list(owner: &str, repo: &str, per_page: u8) -> Result<Vec<PullRequest>, AppError> {
     let client = api_client()?;
-    // First page of open PRs (v0.1) — paginate when a flag is needed.
     let page = client
         .pulls(owner, repo)
         .list()
         .state(octocrab::params::State::Open)
-        .per_page(50)
+        .per_page(per_page)
         .send()
         .await?;
     Ok(page.items)

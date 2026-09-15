@@ -27,6 +27,12 @@ pub enum IssueArgs {
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
+        /// Max rows (1-100, default 30)
+        #[arg(long)]
+        limit: Option<u32>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
     },
     /// Show issue details
     View {
@@ -35,6 +41,9 @@ pub enum IssueArgs {
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
     },
     /// Close an issue
     Close {
@@ -54,11 +63,18 @@ pub async fn run(args: IssueArgs) -> Result<(), AppError> {
             println!("Created #{} {} → {owner}/{name}", issue.number, issue.title);
             Ok(())
         }
-        IssueArgs::List { repo } => {
+        IssueArgs::List { repo, limit, json } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
-            let issues = api::list(&owner, &name).await?;
+            let issues = api::list(&owner, &name, crate::github::repo::clamp_limit(limit)).await?;
             if issues.is_empty() {
                 println!("No open issues in {owner}/{name}.");
+                return Ok(());
+            }
+            if json {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&issues).unwrap_or_default()
+                );
                 return Ok(());
             }
             for issue in issues {
@@ -69,10 +85,17 @@ pub async fn run(args: IssueArgs) -> Result<(), AppError> {
             }
             Ok(())
         }
-        IssueArgs::View { number, repo } => {
+        IssueArgs::View { number, repo, json } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
             let issue = api::view(&owner, &name, number).await?;
-            print!("{}", render::issue(&issue));
+            if json {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&issue).unwrap_or_default()
+                );
+            } else {
+                print!("{}", render::issue(&issue));
+            }
             Ok(())
         }
         IssueArgs::Close { number, repo } => {

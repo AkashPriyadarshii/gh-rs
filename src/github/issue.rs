@@ -8,10 +8,10 @@
 
 use crate::error::AppError;
 use crate::github::client::{api_client, http, load_token};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(default)]
 pub struct IssueSummary {
     pub number: u64,
@@ -25,17 +25,20 @@ pub struct IssueSummary {
     pub pull_request: Option<serde_json::Value>,
 }
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(default)]
 pub struct IssueUser {
     pub login: String,
 }
 
-pub async fn list(owner: &str, repo: &str) -> Result<Vec<IssueSummary>, AppError> {
+/// Single-page open-issue list. `per_page` = clamped --limit (max 100).
+/// ponytail: no Link-header walker — add cursor pagination when issues exceed 100.
+/// Limit clamp shared from repo module (same GitHub per_page ceiling).
+pub async fn list(owner: &str, repo: &str, per_page: u8) -> Result<Vec<IssueSummary>, AppError> {
     let client = api_client()?;
     let issues: Vec<IssueSummary> = client
         .get(
-            format!("/repos/{owner}/{repo}/issues?state=open&per_page=50"),
+            format!("/repos/{owner}/{repo}/issues?state=open&per_page={per_page}"),
             None::<&()>,
         )
         .await?;
