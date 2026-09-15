@@ -1,0 +1,13 @@
+<!-- gh-rs icon — Nothing-style: OLED tile, dot-matrix >_, one yellow cursor pixel. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <rect x="4" y="4" width="88" height="88" rx="18" fill="#0A0A0A"/>
+  <rect x="4" y="4" width="88" height="88" rx="18" fill="none" stroke="#262626" stroke-width="2"/>
+  <g fill="#F5F5F5">
+    <!-- > chevron, 3x5 dots -->
+    <circle cx="28" cy="34" r="3.2"/><circle cx="36" cy="40" r="3.2"/><circle cx="44" cy="46" r="3.2"/><circle cx="36" cy="52" r="3.2"/><circle cx="28" cy="58" r="3.2"/>
+    <!-- _ underscore, 1x3 dots -->
+    <circle cx="54" cy="58" r="3.2"/><circle cx="62" cy="58" r="3.2"/><circle cx="70" cy="58" r="3.2"/>
+  </g>
+  <!-- cursor pixel: README badge yellow -->
+  <rect x="76" y="52" width="7" height="12" fill="#EAB308"/>
+</svg>
