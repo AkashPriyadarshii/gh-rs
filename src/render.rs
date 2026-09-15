@@ -1,8 +1,8 @@
 //! Shared plain-text renderers for view/diff commands (repo, pr, issue).
 //! One fetch → render shape keeps output consistent across command groups.
 
+use crate::github::issue::IssueSummary;
 use crate::github::repo::RepositorySummary;
-use octocrab::models::issues::Issue;
 use octocrab::models::pulls::PullRequest;
 
 #[allow(dead_code)] // wired into repo view in S3 final pass
@@ -28,12 +28,10 @@ pub fn repository(r: &RepositorySummary) -> String {
     out
 }
 
-pub fn issue(issue: &Issue) -> String {
-    let login = &issue.user.login;
-    let state = format!("{:?}", issue.state);
+pub fn issue(issue: &IssueSummary) -> String {
     let mut out = format!(
         "#{} {} [{}] by {}\n",
-        issue.number, issue.title, state, login
+        issue.number, issue.title, issue.state, issue.user.login
     );
     if let Some(body) = &issue.body {
         out.push('\n');
