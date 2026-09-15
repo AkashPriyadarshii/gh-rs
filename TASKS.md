@@ -29,4 +29,19 @@
 ## Sprint 3 — issue
 - [x] issue create / list / view / close — live-tested end-to-end (private gh-issue-test-1: create #1-5 → list → view → close all → list-empty; 404 guard on nonexistent; scratch repo deleted)
 - [x] Tests
-- [ ] README final pass, tag v0.1.0
+- [x] README final pass (usage + benchmarks)
+- [ ] tag v0.1.0
+
+## Audit batch (post-S3 review)
+- [x] issue list filters PRs (pull_request key) — live-verified on gh-verify-audit (#1 shown, PR #2 excluded)
+- [x] device-flow poll decodes RFC 8628 errors before status check
+- [x] repo clone sends Bearer extraHeader from keyring (private repos, zero git-credential setup)
+- [x] render::pull_request labels merged PRs [Merged] — live-verified (#2 Open → squash → [Merged])
+- [x] git origin parse: trailing slash + .git order, shared parse_origin + empty-segment guard
+- [x] shared cli::repo::split_repo (pr/issue resolve deduped)
+- [x] http() cached via OnceLock; CI concurrency + workflow_dispatch; bare-URL doc fix
+- [x] Cargo [profile.release]: strip/lto/cgu=1 (14.4 → 12.4 MB); panic=abort rejected (backtraces)
+- [x] STATE.md synced; benchmarks re-run Sep 2026 (honest: API latency wash, startup/size wins)
+
+## Deferred to v0.2 (explicitly rejected for v0.1)
+- repo view optional positional; repo list sort/limit; --json output; 80%+ coverage + GH_RS_TEST_TOKEN harness

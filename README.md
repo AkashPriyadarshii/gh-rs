@@ -39,19 +39,19 @@ Tokens live in the OS credential store (Windows Credential Manager / macOS Keych
 
 ## Benchmarks
 
-Measured on Windows 11 (release builds, 3 runs each, network included). gh 2.93.0 vs gh-rs v0.1. Cold runs include TLS handshake; subsequent runs are warm.
+Measured on Windows 11 (release builds, 3 runs each, network included, Sep 2026 re-run after `[profile.release]` strip+lto+cgu=1). gh 2.93.0 vs gh-rs v0.1. Network dominates both — deltas are tens of ms, don't oversell.
 
 | Command | gh | gh-rs | Notes |
 |---|---|---|---|
-| `auth status` | 0.85s | 0.77s | both hit GET /user |
-| `repo view` | 0.79–0.96s | 0.70–0.85s | gh-rs ~15% faster (slimmer decode) |
-| `pr list` | 0.97–1.23s | 0.64–1.46s | gh-rs warm ~35% faster; first run slower (fresh TLS) |
-| `issue list` | 0.95–1.08s | 0.67–0.72s | gh-rs ~30% faster (slim IssueSummary vs full model) |
-| `--help` (no network) | 0.14s | 0.03s | gh-rs ~5x faster startup |
+| `auth status` | 699–768ms | 622–766ms | tie; both hit GET /user |
+| `repo view` | 684–749ms | 783–798ms | gh ~7% faster this run (earlier run had gh-rs ~15% ahead — noise) |
+| `pr list` | 706–812ms | 636–723ms | gh-rs ~10% faster |
+| `issue list` | 714–877ms | 741–752ms | tie; gh variance higher |
+| `--help` (no network) | 102–105ms | 49–65ms | gh-rs ~2x faster startup |
 
-Binary size: gh 40.7 MB vs gh-rs 14.4 MB (~65% smaller — single-purpose, no TUI/pager/extension runtime).
+Binary size: gh 40.7 MB vs gh-rs 12.4 MB (~70% smaller — single-purpose, no TUI/pager/extension runtime). Release profile (`strip/lto/cgu=1`) cut gh-rs from 14.4 MB → 12.4 MB; `panic="abort"` deliberately skipped (backtraces beat ~1MB).
 
-Why gh-rs wins on API calls: it decodes only what it prints (slim local structs), skips gh's pager/color/TTY probing, and has no config-file discovery. Difference is tens of milliseconds of wall time dominated by network — don't oversell it.
+Honest read: both CLIs spend ~700ms on TLS+API round trip. gh-rs wins startup and binary size clearly; per-command API latency is a wash within noise. Slim local structs (RepositorySummary/IssueSummary) keep decode cheap but the network owns the total.
 
 ## Why not just use `gh`?
 Built to learn Rust with a real tool. Full command parity is intentionally out of scope — see PRD.md.
