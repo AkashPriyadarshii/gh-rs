@@ -1,7 +1,7 @@
 # STATE — gh-rs
 
 ## Current
-Phase: v0.1.0 tagged + pushed (Sep 15 2026). Repo PUBLIC. Icon set shipped (README header renders, social preview deferred to owner click). Next: fresh-clone build check + README polish review.
+Phase: v0.1.0 tagged + pushed (Sep 15 2026). Repo PUBLIC. Published to crates.io (`cargo install gh-rs`). Premium marketing site live at `https://akashpriyadarshii.github.io/gh-rs/`. Icon set shipped (README header renders, social preview deferred to owner click). Next: GitHub Release v0.1.0 asset packaging.
 
 ## Verify log (Sep 15 2026, post-audit)
 - fmt + clippy -D warnings + 11 tests pass, cargo doc zero warnings
