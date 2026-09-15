@@ -1,6 +1,7 @@
 //! `gh-rs issue` — create, list, view, close.
 //! Target repo: explicit `--repo owner/repo` wins, else derived from git origin.
 
+use crate::cli::repo::split_repo;
 use crate::error::AppError;
 use crate::git;
 use crate::github::issue as api;
@@ -85,12 +86,7 @@ pub async fn run(args: IssueArgs) -> Result<(), AppError> {
 
 async fn resolve(explicit: Option<&str>) -> Result<(String, String), AppError> {
     match explicit {
-        Some(repo) => {
-            let (o, r) = repo.split_once('/').ok_or_else(|| {
-                AppError::InvalidInput(format!("expected owner/repo, got '{repo}'"))
-            })?;
-            Ok((o.to_string(), r.to_string()))
-        }
+        Some(repo) => split_repo(repo),
         None => git::current_repo(),
     }
 }

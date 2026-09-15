@@ -1,5 +1,5 @@
 //! OAuth device authorization grant (device flow) + auth-state probe.
-//! Endpoint docs: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow
+//! Endpoint docs: <https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow>
 //! Not in octocrab's typed API → reqwest escape hatch.
 
 use crate::error::AppError;
@@ -62,6 +62,9 @@ pub async fn login() -> Result<(), AppError> {
             ));
         }
 
+        // No .error_for_status() here: RFC 8628 errors (authorization_pending,
+        // expired_token, access_denied) arrive as HTTP 200 with an error field,
+        // and some providers send them with 4xx — decode first, match after.
         let resp: AccessTokenResponse = client
             .post(ACCESS_TOKEN_URL)
             .header("Accept", "application/json")
@@ -72,7 +75,6 @@ pub async fn login() -> Result<(), AppError> {
             ])
             .send()
             .await?
-            .error_for_status()?
             .json()
             .await?;
 

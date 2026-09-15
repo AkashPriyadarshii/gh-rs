@@ -47,11 +47,16 @@ pub fn pull_request(pr: &PullRequest) -> String {
         .as_ref()
         .map(|u| u.login.as_str())
         .unwrap_or("unknown");
-    let state = pr
-        .state
-        .as_ref()
-        .map(|s| format!("{s:?}"))
-        .unwrap_or_else(|| "-".into());
+    // GitHub has only open/closed states — merged PRs report state=closed with
+    // merged or merged_at set, so check those first to label Merged correctly.
+    let state = if pr.merged.unwrap_or(false) || pr.merged_at.is_some() {
+        "Merged".to_string()
+    } else {
+        pr.state
+            .as_ref()
+            .map(|s| format!("{s:?}"))
+            .unwrap_or_else(|| "-".into())
+    };
     let base = &pr.base.ref_field;
     let head = &pr.head.ref_field;
     let mut out = format!(

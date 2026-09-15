@@ -5,6 +5,7 @@
 
 use crate::error::AppError;
 use octocrab::Octocrab;
+use std::sync::OnceLock;
 
 /// OAuth App client_id — public by design (same model as `gh`). Not a secret.
 pub const CLIENT_ID: &str = "Ov23liNghdlHihgqbM5V";
@@ -14,11 +15,21 @@ pub const KEYRING_USER: &str = "github.com";
 
 /// Shared unauthenticated HTTP client for endpoints outside octocrab's typed API
 /// (device flow, status probe). User-Agent is required by GitHub.
+/// Process-wide client: reused across commands in one invocation, and cached
+/// across tokio runtimes (reqwest::Client is Clone + Send + Sync + 'static).
+static HTTP: OnceLock<reqwest::Client> = OnceLock::new();
+
 pub fn http() -> reqwest::Client {
-    reqwest::Client::builder()
-        .user_agent("gh-rs/0.1.0")
-        .build()
-        .expect("reqwest client build is infallible with no special config")
+    HTTP.get_or_init(|| {
+        reqwest::Client::builder()
+            .user_agent("gh-rs/0.1.0")
+            .build()
+            // Builder with no proxy/TLS overrides can't fail — a panic here would
+            // mean a reqwest-internal regression, not user input. OnceLock scopes
+            // the risk to first-init instead of every call site.
+            .expect("reqwest default client build failed")
+    })
+    .clone()
 }
 
 pub fn load_token() -> Result<String, AppError> {
