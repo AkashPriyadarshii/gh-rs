@@ -1,6 +1,9 @@
-# HTML site assets: keep diffs readable, LF on all platforms
-*.html text eol=lf diff=html
+# Line endings and diff drivers
+*.html text eol=lf diff=html linguist-detectable=false
 *.css text eol=lf diff=css
 *.js text eol=lf
 *.svg text eol=lf
 *.md text eol=lf
+
+# Ignore marketing site from GitHub language statistics (keeps repo 100% Rust)
+site/** linguist-documentation=true
