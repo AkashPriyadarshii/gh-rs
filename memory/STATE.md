@@ -1,7 +1,14 @@
 # STATE — gh-rs
 
 ## Current
-Phase: v0.1 complete — auth + repo + pr + issue all live-verified. Audit fixes applied (issue-PR filter, device-flow error decode, clone Bearer header, merged-state render, origin URL trailing-slash parse, shared split_repo, CI concurrency, bare-URL doc). Benchmarks in README. Next: tag v0.1.0 + publish-readiness sweep on explicit go.
+Phase: v0.1 complete — auth + repo + pr + issue all live-verified, audit batch applied + live-verified on scratch gh-verify-audit (deleted, 404-confirmed). Benchmarks re-run Sep 2026 on release profile (12.4 MB). Next: tag v0.1.0 + publish-readiness sweep on explicit go.
+
+## Verify log (Sep 15 2026, post-audit)
+- fmt + clippy -D warnings + 11 tests pass, cargo doc zero warnings
+- auth status / repo view regression: clean
+- issue list PR filter: #1 real issue shown, PR #2 excluded ✓
+- pr view merged render: [Open] → squash-merge → [Merged] ✓
+- issue close + scratch repo deleted (404-confirmed)
 
 ## Progress
 - [x] S0 setup
