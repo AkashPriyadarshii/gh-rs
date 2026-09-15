@@ -5,7 +5,6 @@ use crate::github::issue::IssueSummary;
 use crate::github::repo::RepositorySummary;
 use octocrab::models::pulls::PullRequest;
 
-#[allow(dead_code)] // wired into repo view in S3 final pass
 pub fn repository(r: &RepositorySummary) -> String {
     let vis = if r.private { "private" } else { "public" };
     let mut out = format!("{} ({vis})", r.full_name);
