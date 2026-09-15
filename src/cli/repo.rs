@@ -3,6 +3,7 @@
 use crate::error::AppError;
 use crate::git;
 use crate::github::repo as api;
+use crate::render;
 use clap::Subcommand;
 
 #[derive(Subcommand)]
@@ -65,22 +66,7 @@ pub async fn run(args: RepoArgs) -> Result<(), AppError> {
         RepoArgs::View { repo } => {
             let (owner, name) = split_repo(&repo)?;
             let r = api::view(&owner, &name).await?;
-            let vis = if r.private { "private" } else { "public" };
-            println!("{} ({vis})", r.full_name);
-            if let Some(d) = &r.description {
-                println!();
-                println!("  {d}");
-            }
-            println!();
-            println!("  language:       {}", r.language.as_deref().unwrap_or("-"));
-            println!("  stars:          {}", r.stargazers_count);
-            println!("  default branch: {}", r.default_branch);
-            println!(
-                "  pushed:         {}",
-                r.pushed_at.as_deref().unwrap_or("-")
-            );
-            println!("  clone:          {}", r.clone_url);
-            println!("  web:            {}", r.html_url);
+            print!("{}", render::repository(&r));
             Ok(())
         }
     }
