@@ -56,13 +56,25 @@ pub fn delete_token() -> Result<(), AppError> {
 }
 
 /// Authenticated octocrab client. Token comes from the OS credential store.
+/// Cached process-wide: a CLI invocation runs one command, so the token can't
+/// change mid-process — rebuilding octocrab + re-reading keyring per call was
+/// pure waste (pr create alone built clients twice).
+static API: OnceLock<Octocrab> = OnceLock::new();
+
 pub fn api_client() -> Result<Octocrab, AppError> {
+    if let Some(client) = API.get() {
+        return Ok(client.clone());
+    }
     let token = load_token()?;
-    Octocrab::builder()
+    let client = Octocrab::builder()
         .personal_token(token)
         // octocrab 0.54 sends its own "octocrab" UA — valid for GitHub's UA requirement.
         .build()
-        .map_err(AppError::from)
+        .map_err(AppError::from)?;
+    // Race between two threads building — both valid, last write wins.
+    // Single CLI invocation is effectively single-threaded; this is belt-and-braces.
+    let _ = API.set(client.clone());
+    Ok(client)
 }
 
 #[cfg(test)]

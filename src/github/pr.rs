@@ -4,7 +4,6 @@ use crate::error::AppError;
 use crate::github::client::{api_client, http, load_token};
 use octocrab::models::pulls::PullRequest;
 use octocrab::params::pulls::MergeMethod;
-use serde_json::json;
 
 /// Single-page open-PR list. `per_page` = clamped --limit (max 100).
 /// ponytail: no cursor pagination — octocrab Page exposes next, wire it when PRs exceed 100.
@@ -33,28 +32,13 @@ pub async fn create(
     base: &str,
     body: Option<&str>,
 ) -> Result<PullRequest, AppError> {
-    let client = http();
-    let token = load_token()?;
-    let url = format!("https://api.github.com/repos/{owner}/{repo}/pulls");
-    let body = json!({
-        "title": title,
-        "head": head,
-        "base": base,
-        "body": body,
-    });
-    let resp = client
-        .post(url)
-        .bearer_auth(token)
-        .json(&body)
-        .send()
-        .await?;
-    let status = resp.status();
-    if !status.is_success() {
-        let detail = resp.text().await.unwrap_or_default();
-        return Err(AppError::GitHubApi(format!("{status}: {detail}")));
+    let client = api_client()?;
+    let handler = client.pulls(owner, repo);
+    let mut builder = handler.create(title, head, base);
+    if let Some(b) = body {
+        builder = builder.body(b);
     }
-    let pr: PullRequest = resp.json().await?;
-    Ok(pr)
+    Ok(builder.send().await?)
 }
 
 pub async fn merge(
