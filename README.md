@@ -13,6 +13,7 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 **GitHub CLI in Rust. Four commands. No bloat.**
 
 [![Crates.io](https://img.shields.io/crates/v/gh-rs.svg?style=flat-square)](https://crates.io/crates/gh-rs)
+[![Downloads](https://img.shields.io/crates/d/gh-rs.svg?style=flat-square)](https://crates.io/crates/gh-rs)
 [![CI](https://github.com/AkashPriyadarshii/gh-rs/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/AkashPriyadarshii/gh-rs/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?style=flat-square)](https://www.rust-lang.org)
@@ -233,19 +234,19 @@ Options:
 
 ## Benchmarks
 
-Windows 11, release build, 3 runs each, network included. Re-run Sep 2026 after `strip/lto/cgu=1`. gh 2.93.0 vs gh-rs v0.1.
+Windows 11, 8GB, release build, 7 runs each (warmup + outlier dropped), live token, network included. Python `subprocess` timing. gh 2.93.0 vs gh-rs v0.1. Medians.
 
-| Command | gh | gh-rs |
-|---|---|---|
-| `auth status` | 699-768ms | 622-766ms, tie, both hit GET /user |
-| `repo view` | 684-749ms | 783-798ms, gh ~7% ahead this run, noise either way |
-| `pr list` | 706-812ms | 636-723ms, gh-rs ~10% faster |
-| `issue list` | 714-877ms | 741-752ms, tie, gh variance higher |
-| `--help`, no network | 102-105ms | 49-65ms, gh-rs ~2x faster startup |
+| Command | gh | gh-rs | delta |
+|---|---|---|---|
+| `auth status` | 516.8ms | 516.0ms | tie, both hit GET /user |
+| `repo view` | 950.7ms | 584.0ms | gh-rs ~38% faster |
+| `pr list` | 642.0ms | 561.5ms | gh-rs ~12% faster |
+| `issue list` | 640.0ms | 594.5ms | gh-rs ~7% faster |
+| `--help`, no network | 56.9ms | 8.4ms | gh-rs ~6.8x faster startup |
 
-Binary: gh 40.7 MB vs gh-rs 12.4 MB. Release profile cut gh-rs from 14.4 MB. `panic="abort"` skipped on purpose, backtraces beat ~1 MB.
+Binary: gh 40.7 MB vs gh-rs 10.9 MB. Release profile (`strip`+`lto`+`cgu=1`) cut gh-rs from 14.4 MB. `panic="abort"` skipped on purpose, backtraces beat ~1 MB.
 
-Both CLIs spend ~700ms on TLS plus API round trip. gh-rs wins startup and size. Per-command latency sits inside noise.
+Per-command latency is dominated by TLS plus API round trip (~500ms of the ~600ms). gh-rs wins startup and size, and edges the API-bound commands on top — the octocrab client is cached per process, so one invocation makes one keyring read and one client build.
 
 ## Architecture
 
