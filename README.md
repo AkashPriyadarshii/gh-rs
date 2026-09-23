@@ -291,6 +291,6 @@ v0.1 refuses: full `gh` parity (actions, releases, gists, secrets, search), TUI 
 
 ## Social
 
-[X / Twitter](https://x.com/Akash__ydv001) · [Threads](https://www.threads.com/@free_dev2026) · [Instagram](https://www.instagram.com/akash.priyadarshii/) · [Reddit](https://reddit.com/user/DragonfruitWeak2801)
+[X / Twitter](https://x.com/Akash__ydv001) · [Threads](https://www.threads.com/@free_dev2026) · [Instagram](https://www.instagram.com/akash.priyadarshii/) · [Reddit](https://reddit.com/user/akashpriyadarshi)
 
 *Rust CLI for GitHub: auth, repos, pull requests, issues. Small on purpose.*
