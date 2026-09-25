@@ -10,6 +10,8 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 
 # gh-rs
 
+**Support:** fuel the next build — [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/AkashPriyadarshi)
+
 **GitHub CLI in Rust. Four commands. No bloat.**
 
 [![Crates.io](https://img.shields.io/crates/v/gh-rs.svg?style=flat-square)](https://crates.io/crates/gh-rs)
@@ -22,7 +24,7 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 
 [Why](#why) · [Install](#install) · [Quickstart](#quickstart) · [Commands](#commands) · [Benchmarks](#benchmarks) · [Architecture](#architecture) · [Non-goals](#non-goals)
 
-*Fuel the next build:* [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/AkashPriyadarshi)
+*Fuel the next build:* 
 
 </div>
 
