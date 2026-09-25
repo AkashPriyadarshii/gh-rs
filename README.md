@@ -22,6 +22,8 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 
 [Why](#why) · [Install](#install) · [Quickstart](#quickstart) · [Commands](#commands) · [Benchmarks](#benchmarks) · [Architecture](#architecture) · [Non-goals](#non-goals)
 
+*Fuel the next build:* [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/AkashPriyadarshi)
+
 </div>
 
 [![crates.io](https://img.shields.io/crates/v/gh-rs?style=flat-square)](https://crates.io/crates/gh-rs) [![downloads](https://img.shields.io/crates/d/gh-rs?style=flat-square)](https://crates.io/crates/gh-rs) [![release](https://img.shields.io/github/v/release/AkashPriyadarshii/gh-rs?style=flat-square&label=release)](https://github.com/AkashPriyadarshii/gh-rs/releases)
@@ -287,7 +289,7 @@ v0.1 refuses: full `gh` parity (actions, releases, gists, secrets, search), TUI 
 
 **Akash Priyadarshi** (Patna, Bihar, India)
 
-[GitHub](https://github.com/AkashPriyadarshii) · [Portfolio](https://akashpriyadarshi.vercel.app) · [LinkedIn](https://linkedin.com/in/akash-priyadarshi-1aa51b37a) · [Resume](https://akashpriyadarshii.github.io/Resume/)
+[GitHub](https://github.com/AkashPriyadarshii) · [Portfolio](https://akashpriyadarshi.vercel.app) · [LinkedIn](https://linkedin.com/in/akashpriyadarshii) · [Resume](https://akashpriyadarshii.github.io/Resume/)
 
 ## Social
 
