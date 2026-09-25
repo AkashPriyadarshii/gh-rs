@@ -24,8 +24,6 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 
 [Why](#why) · [Install](#install) · [Quickstart](#quickstart) · [Commands](#commands) · [Benchmarks](#benchmarks) · [Architecture](#architecture) · [Non-goals](#non-goals)
 
-*Fuel the next build:* 
-
 </div>
 
 [![crates.io](https://img.shields.io/crates/v/gh-rs?style=flat-square)](https://crates.io/crates/gh-rs) [![downloads](https://img.shields.io/crates/d/gh-rs?style=flat-square)](https://crates.io/crates/gh-rs) [![release](https://img.shields.io/github/v/release/AkashPriyadarshii/gh-rs?style=flat-square&label=release)](https://github.com/AkashPriyadarshii/gh-rs/releases)
