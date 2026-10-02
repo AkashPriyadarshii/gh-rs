@@ -33,7 +33,7 @@ Keywords: github cli, rust cli, octocrab, github api, git, pull request cli, key
 `gh` does everything. gh-rs does four things: `auth`, `repo`, `pr`, `issue`.
 
 - **You want a fast binary.** 12.4 MB. `--help` in ~50ms.
-- **You want JSON for agents.** Every list/view takes `--json`. Pipe it to `jq`.
+- **You want JSON and jq for agents.** Universal `--json` on all commands (reads + mutations), plus zero-dependency built-in `--jq` filtering (pure Rust `jaq`).
 - **You want your token out of dotfiles.** Device flow puts it in the OS keychain. Nothing lands in `~/.config`.
 - **You want readable code.** ~15 files. Each command is one `cli/` module plus one `github/` module.
 
@@ -87,30 +87,30 @@ gh-rs auth status       # ok / expired / not logged in
 gh-rs auth logout       # delete the stored credential
 
 gh-rs repo clone owner/repo [dir]
-gh-rs repo create name [--public]        # private unless --public
-gh-rs repo list [--limit N] [--json]     # newest push first
-gh-rs repo view [owner/repo] [--json]    # bare means current repo from git origin
+gh-rs repo create name [--public] [--json] [--jq EXPR]
+gh-rs repo list [--limit N] [--json] [--jq EXPR] [--plain]     # newest push first
+gh-rs repo view [owner/repo] [--json] [--jq EXPR] [--plain]    # bare means current repo from git origin
 
-gh-rs pr create --title T [--body B] [--head H] [--base B] [--repo owner/repo]
-gh-rs pr list [--repo owner/repo] [--limit N] [--json]
-gh-rs pr view <number> [--repo owner/repo] [--json]
-gh-rs pr diff <number> [--repo owner/repo]    # raw unified diff, always text
-gh-rs pr merge <number> [--method merge|squash|rebase] [--repo owner/repo]
+gh-rs pr create --title T [--body B] [--head H] [--base B] [--repo owner/repo] [--json] [--jq EXPR]
+gh-rs pr list [--repo owner/repo] [--limit N] [--json] [--jq EXPR] [--plain]
+gh-rs pr view <number> [--repo owner/repo] [--json] [--jq EXPR] [--plain]
+gh-rs pr diff <number> [--repo owner/repo]                     # raw unified diff, always text
+gh-rs pr merge <number> [--method merge|squash|rebase] [--repo owner/repo] [--json] [--jq EXPR]
 
-gh-rs issue create --title T [--body B] [--repo owner/repo]
-gh-rs issue list [--repo owner/repo] [--limit N] [--json]
-gh-rs issue view <number> [--repo owner/repo] [--json]
-gh-rs issue close <number> [--repo owner/repo]
+gh-rs issue create --title T [--body B] [--repo owner/repo] [--json] [--jq EXPR]
+gh-rs issue list [--repo owner/repo] [--limit N] [--json] [--jq EXPR] [--plain]
+gh-rs issue view <number> [--repo owner/repo] [--json] [--jq EXPR] [--plain]
+gh-rs issue close <number> [--repo owner/repo] [--json] [--jq EXPR]
 ```
-
-`--json` exists on list/view only. Mutating commands print human text. `--limit` is 1-100, default 30, one `per_page` request.
 
 ### Flags
 
 | Command | Flag | Default | Meaning |
 |---|---|---|---|
-| `repo/pr/issue list` | `--limit N` | `30` | Rows returned, clamped to 1-100 |
-| `repo/pr/issue list/view` | `--json` | off | Pretty JSON instead of text |
+| `repo/pr/issue list` | `--limit N` | `30` | Rows returned (1-1000, multi-page walker) |
+| `repo/pr/issue *` | `--json` | off | Pretty JSON output (all commands, reads + mutations) |
+| `repo/pr/issue *` | `--jq EXPR` | off | Filter/query JSON with embedded `jaq` (no external `jq` needed) |
+| `repo/pr/issue list/view`| `--plain` | off | Tab-separated output for fast shell pipelines (`xargs`, `cut`) |
 | `repo create` | `--public` | off (private) | Create as public repo |
 | `pr create` | `--head H` | current branch | Source branch |
 | `pr create` | `--base B` | repo default | Target branch |

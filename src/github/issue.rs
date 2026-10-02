@@ -31,22 +31,43 @@ pub struct IssueUser {
     pub login: String,
 }
 
-/// Single-page open-issue list. `per_page` = clamped --limit (max 100).
-/// ponytail: no Link-header walker — add cursor pagination when issues exceed 100.
-/// Limit clamp shared from repo module (same GitHub per_page ceiling).
-pub async fn list(owner: &str, repo: &str, per_page: u8) -> Result<Vec<IssueSummary>, AppError> {
+/// Multi-page open-issue list. Walks pages up to `limit` (max 1000, default 30).
+pub async fn list(owner: &str, repo: &str, limit: usize) -> Result<Vec<IssueSummary>, AppError> {
     let client = api_client()?;
-    let issues: Vec<IssueSummary> = client
-        .get(
-            format!("/repos/{owner}/{repo}/issues?state=open&per_page={per_page}"),
-            None::<&()>,
-        )
-        .await?;
-    // /issues mixes PRs into the response — drop anything carrying pull_request.
-    Ok(issues
-        .into_iter()
-        .filter(|i| i.pull_request.is_none())
-        .collect())
+    let mut issues = Vec::new();
+    let mut page: u32 = 1;
+
+    while issues.len() < limit {
+        let fetch_size = (limit - issues.len()).min(100);
+        let batch: Vec<IssueSummary> = client
+            .get(
+                format!(
+                    "/repos/{owner}/{repo}/issues?state=open&per_page={fetch_size}&page={page}"
+                ),
+                None::<&()>,
+            )
+            .await?;
+
+        if batch.is_empty() {
+            break;
+        }
+
+        let batch_len = batch.len();
+        // /issues mixes PRs into the response — drop anything carrying pull_request.
+        for i in batch {
+            if i.pull_request.is_none() {
+                issues.push(i);
+            }
+        }
+
+        if batch_len < fetch_size {
+            break;
+        }
+        page += 1;
+    }
+
+    issues.truncate(limit);
+    Ok(issues)
 }
 
 pub async fn view(owner: &str, repo: &str, number: u64) -> Result<IssueSummary, AppError> {

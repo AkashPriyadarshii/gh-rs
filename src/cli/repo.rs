@@ -20,15 +20,27 @@ pub enum RepoArgs {
         name: String,
         #[arg(long, help = "Create as public (default: private)")]
         public: bool,
-    },
-    /// List your repositories (newest push first)
-    List {
-        /// Max rows (1-100, default 30)
-        #[arg(long)]
-        limit: Option<u32>,
         /// Output as JSON (agent-friendly)
         #[arg(long)]
         json: bool,
+        /// Filter JSON output with embedded jaq/jq
+        #[arg(long)]
+        jq: Option<String>,
+    },
+    /// List your repositories (newest push first)
+    List {
+        /// Max rows (1-1000, default 30)
+        #[arg(long)]
+        limit: Option<usize>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
+        /// Filter JSON output with embedded jaq/jq
+        #[arg(long)]
+        jq: Option<String>,
+        /// Output plain tab-separated values without headers
+        #[arg(long)]
+        plain: bool,
     },
     /// Show repository details (default: current repo from git origin)
     View {
@@ -37,19 +49,13 @@ pub enum RepoArgs {
         /// Output as JSON (agent-friendly)
         #[arg(long)]
         json: bool,
+        /// Filter JSON output with embedded jaq/jq
+        #[arg(long)]
+        jq: Option<String>,
+        /// Output plain tab-separated values
+        #[arg(long)]
+        plain: bool,
     },
-}
-
-/// Print value as pretty JSON on --json, else run the plain-text renderer.
-fn emit_json<T: serde::Serialize>(value: &T, as_json: bool, text: impl FnOnce() -> String) {
-    if as_json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(value).unwrap_or_default()
-        );
-    } else {
-        print!("{}", text());
-    }
 }
 
 pub async fn run(args: RepoArgs) -> Result<(), AppError> {
@@ -60,45 +66,104 @@ pub async fn run(args: RepoArgs) -> Result<(), AppError> {
             println!("Cloned {owner}/{name}.");
             Ok(())
         }
-        RepoArgs::Create { name, public } => {
+        RepoArgs::Create {
+            name,
+            public,
+            json,
+            jq,
+        } => {
             if name.contains('/') {
                 return Err(AppError::InvalidInput(
                     "repo create takes a bare name (not owner/name)".into(),
                 ));
             }
             let r = api::create(&name, public).await?;
-            let vis = if r.private { "private" } else { "public" };
-            println!("Created {} ({vis}): {}", r.full_name, r.html_url);
+            let out = render::format_output(
+                &r,
+                json,
+                jq.as_deref(),
+                false,
+                |repo| {
+                    let vis = if repo.private { "private" } else { "public" };
+                    format!("Created {} ({vis}): {}", repo.full_name, repo.html_url)
+                },
+                None::<fn(&api::RepositorySummary) -> String>,
+            )?;
+            println!("{out}");
             Ok(())
         }
-        RepoArgs::List { limit, json } => {
+        RepoArgs::List {
+            limit,
+            json,
+            jq,
+            plain,
+        } => {
             let repos = api::list(api::clamp_limit(limit)).await?;
-            if repos.is_empty() {
+            if repos.is_empty() && !json && jq.is_none() {
                 println!("No repositories found.");
                 return Ok(());
             }
-            if json {
-                println!(
-                    "{}",
-                    serde_json::to_string_pretty(&repos).unwrap_or_default()
-                );
-                return Ok(());
-            }
-            for r in &repos {
-                let vis = if r.private { "private" } else { "public" };
-                let lang = r.language.as_deref().unwrap_or("-");
-                let pushed = r.pushed_at.as_deref().unwrap_or("-");
-                println!("{:<40} {:<7} {:<14} {}", r.full_name, vis, lang, pushed);
+            let out = render::format_output(
+                &repos,
+                json,
+                jq.as_deref(),
+                plain,
+                |list| {
+                    let mut lines = Vec::new();
+                    for r in list {
+                        let vis = if r.private { "private" } else { "public" };
+                        let lang = r.language.as_deref().unwrap_or("-");
+                        let pushed = r.pushed_at.as_deref().unwrap_or("-");
+                        lines.push(format!(
+                            "{:<40} {:<7} {:<14} {}",
+                            r.full_name, vis, lang, pushed
+                        ));
+                    }
+                    lines.join("\n")
+                },
+                Some(|list: &Vec<api::RepositorySummary>| {
+                    let mut lines = Vec::new();
+                    for r in list {
+                        let vis = if r.private { "private" } else { "public" };
+                        let lang = r.language.as_deref().unwrap_or("-");
+                        let pushed = r.pushed_at.as_deref().unwrap_or("-");
+                        lines.push(format!("{}\t{}\t{}\t{}", r.full_name, vis, lang, pushed));
+                    }
+                    lines.join("\n")
+                }),
+            )?;
+            if !out.is_empty() {
+                println!("{out}");
             }
             Ok(())
         }
-        RepoArgs::View { repo, json } => {
+        RepoArgs::View {
+            repo,
+            json,
+            jq,
+            plain,
+        } => {
             let (owner, name) = match repo.as_deref() {
                 Some(r) => split_repo(r)?,
                 None => git::current_repo()?,
             };
             let r = api::view(&owner, &name).await?;
-            emit_json(&r, json, || render::repository(&r));
+            let out = render::format_output(
+                &r,
+                json,
+                jq.as_deref(),
+                plain,
+                render::repository,
+                Some(|repo: &api::RepositorySummary| {
+                    let vis = if repo.private { "private" } else { "public" };
+                    let lang = repo.language.as_deref().unwrap_or("-");
+                    format!(
+                        "{}\t{}\t{}\t{}\t{}",
+                        repo.full_name, vis, lang, repo.stargazers_count, repo.html_url
+                    )
+                }),
+            )?;
+            println!("{out}");
             Ok(())
         }
     }

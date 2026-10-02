@@ -1,6 +1,7 @@
 //! Shared plain-text renderers for view/diff commands (repo, pr, issue).
 //! One fetch → render shape keeps output consistent across command groups.
 
+use crate::error::AppError;
 use crate::github::issue::IssueSummary;
 use crate::github::repo::RepositorySummary;
 use octocrab::models::pulls::PullRequest;
@@ -79,4 +80,159 @@ pub fn pull_request(pr: &PullRequest) -> String {
         pr.deletions.unwrap_or(0),
     ));
     out
+}
+
+/// Evaluates a jq filter string on any serializable data using the embedded jaq engine.
+pub fn evaluate_jq<T: serde::Serialize>(data: &T, filter_str: &str) -> Result<String, AppError> {
+    use jaq_core::load::{Arena, File, Loader};
+    use jaq_core::Compiler;
+    use jaq_json::Val;
+
+    let json_bytes = serde_json::to_vec(data)
+        .map_err(|e| AppError::InvalidInput(format!("failed to serialize data: {e}")))?;
+    let input_val = jaq_json::read::parse_single(&json_bytes)
+        .map_err(|e| AppError::InvalidInput(format!("failed to parse JSON input: {e:?}")))?;
+
+    let program = File {
+        code: filter_str,
+        path: (),
+    };
+    let defs = jaq_core::defs()
+        .chain(jaq_std::defs())
+        .chain(jaq_json::defs());
+    let funs = jaq_core::funs()
+        .chain(jaq_std::funs())
+        .chain(jaq_json::funs());
+
+    let loader = Loader::new(defs);
+    let arena = Arena::default();
+    let modules = loader
+        .load(&arena, program)
+        .map_err(|e| AppError::InvalidInput(format!("jq parse error: {e:?}")))?;
+    let filter = Compiler::default()
+        .with_funs(funs)
+        .compile(modules)
+        .map_err(|e| AppError::InvalidInput(format!("jq compile error: {e:?}")))?;
+
+    let ctx =
+        jaq_core::Ctx::<jaq_core::data::JustLut<Val>>::new(&filter.lut, jaq_core::Vars::new([]));
+    let mut outputs = Vec::new();
+
+    for item in filter.id.run((ctx, input_val)) {
+        let val = item.map_err(|e| AppError::InvalidInput(format!("jq runtime error: {e:?}")))?;
+        let s = format!("{val}");
+        if let Ok(serde_json::Value::String(unquoted)) =
+            serde_json::from_str::<serde_json::Value>(&s)
+        {
+            outputs.push(unquoted);
+        } else {
+            outputs.push(s);
+        }
+    }
+
+    Ok(outputs.join("\n"))
+}
+
+/// Unified output formatter for all CLI commands.
+/// Precedence:
+/// 1. `jq`: If specified, filters the serialized JSON using embedded jaq.
+/// 2. `json`: If true, pretty-prints JSON.
+/// 3. `plain`: If true and `plain_fn` is provided, renders plain tab-separated text.
+/// 4. Default: Runs `human_fn` for rich terminal output.
+pub fn format_output<T: serde::Serialize>(
+    data: &T,
+    json: bool,
+    jq: Option<&str>,
+    plain: bool,
+    human_fn: impl FnOnce(&T) -> String,
+    plain_fn: Option<impl FnOnce(&T) -> String>,
+) -> Result<String, AppError> {
+    if let Some(filter) = jq {
+        evaluate_jq(data, filter)
+    } else if json {
+        serde_json::to_string_pretty(data)
+            .map_err(|e| AppError::InvalidInput(format!("failed to serialize JSON: {e}")))
+    } else if plain {
+        if let Some(p) = plain_fn {
+            Ok(p(data))
+        } else {
+            Ok(human_fn(data))
+        }
+    } else {
+        Ok(human_fn(data))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_jaq_evaluation() {
+        let data = serde_json::json!([
+            {"number": 1, "title": "First issue"},
+            {"number": 2, "title": "Second issue"}
+        ]);
+        let res = evaluate_jq(&data, ".[].title").unwrap();
+        assert_eq!(res, "First issue\nSecond issue");
+
+        let numbers = evaluate_jq(&data, ".[].number").unwrap();
+        assert_eq!(numbers, "1\n2");
+
+        let bad_filter = evaluate_jq(&data, ".[invalid syntax");
+        assert!(bad_filter.is_err());
+    }
+
+    #[test]
+    fn test_format_output() {
+        let data = serde_json::json!({"id": 123, "name": "gh-rs"});
+
+        // 1. jq filter wins
+        let jq_out = format_output(
+            &data,
+            false,
+            Some(".name"),
+            false,
+            |_| "human".into(),
+            None::<fn(&serde_json::Value) -> String>,
+        )
+        .unwrap();
+        assert_eq!(jq_out, "gh-rs");
+
+        // 2. json mode
+        let json_out = format_output(
+            &data,
+            true,
+            None,
+            false,
+            |_| "human".into(),
+            None::<fn(&serde_json::Value) -> String>,
+        )
+        .unwrap();
+        assert!(json_out.contains("\"id\": 123"));
+
+        // 3. plain mode
+        let plain_out = format_output(
+            &data,
+            false,
+            None,
+            true,
+            |_| "human".into(),
+            Some(|d: &serde_json::Value| format!("{}\t{}", d["id"], d["name"])),
+        )
+        .unwrap();
+        assert_eq!(plain_out, "123\t\"gh-rs\"");
+
+        // 4. human mode default
+        let human_out = format_output(
+            &data,
+            false,
+            None,
+            false,
+            |_| "human output".into(),
+            None::<fn(&serde_json::Value) -> String>,
+        )
+        .unwrap();
+        assert_eq!(human_out, "human output");
+    }
 }

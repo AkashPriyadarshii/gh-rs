@@ -22,7 +22,7 @@ static HTTP: OnceLock<reqwest::Client> = OnceLock::new();
 pub fn http() -> reqwest::Client {
     HTTP.get_or_init(|| {
         reqwest::Client::builder()
-            .user_agent("gh-rs/0.1.0")
+            .user_agent("gh-rs/0.2.0")
             .build()
             // Builder with no proxy/TLS overrides can't fail — a panic here would
             // mean a reqwest-internal regression, not user input. OnceLock scopes
@@ -33,6 +33,12 @@ pub fn http() -> reqwest::Client {
 }
 
 pub fn load_token() -> Result<String, AppError> {
+    if let Ok(token) = std::env::var("GH_RS_TEST_TOKEN") {
+        let trimmed = token.trim();
+        if !trimmed.is_empty() {
+            return Ok(trimmed.to_string());
+        }
+    }
     let entry = keyring::Entry::new(KEYRING_SERVICE, KEYRING_USER)?;
     entry.get_password().map_err(|e| match e {
         keyring::Error::NoEntry => AppError::AuthMissing,
@@ -98,5 +104,12 @@ mod tests {
         // Requires clean keyring (no real token stored).
         let _ = delete_token();
         assert!(matches!(api_client(), Err(AppError::AuthMissing)));
+    }
+
+    #[test]
+    fn test_load_token_from_env() {
+        std::env::set_var("GH_RS_TEST_TOKEN", "token-from-env-123");
+        assert_eq!(load_token().unwrap(), "token-from-env-123");
+        std::env::remove_var("GH_RS_TEST_TOKEN");
     }
 }

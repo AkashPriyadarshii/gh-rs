@@ -7,6 +7,7 @@ use crate::git;
 use crate::github::pr as api;
 use crate::render;
 use clap::Subcommand;
+use octocrab::models::pulls::PullRequest;
 use octocrab::params::pulls::MergeMethod;
 
 #[derive(Subcommand)]
@@ -28,18 +29,30 @@ pub enum PrArgs {
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
+        /// Filter JSON output with embedded jaq/jq
+        #[arg(long)]
+        jq: Option<String>,
     },
     /// List open pull requests
     List {
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
-        /// Max rows (1-100, default 30)
+        /// Max rows (1-1000, default 30)
         #[arg(long)]
-        limit: Option<u32>,
+        limit: Option<usize>,
         /// Output as JSON (agent-friendly)
         #[arg(long)]
         json: bool,
+        /// Filter JSON output with embedded jaq/jq
+        #[arg(long)]
+        jq: Option<String>,
+        /// Output plain tab-separated values without headers
+        #[arg(long)]
+        plain: bool,
     },
     /// Show pull request details
     View {
@@ -51,6 +64,12 @@ pub enum PrArgs {
         /// Output as JSON (agent-friendly)
         #[arg(long)]
         json: bool,
+        /// Filter JSON output with embedded jaq/jq
+        #[arg(long)]
+        jq: Option<String>,
+        /// Output plain tab-separated values
+        #[arg(long)]
+        plain: bool,
     },
     /// Show the unified diff
     Diff {
@@ -70,6 +89,12 @@ pub enum PrArgs {
         /// owner/repo (default: from git origin)
         #[arg(long)]
         repo: Option<String>,
+        /// Output as JSON (agent-friendly)
+        #[arg(long)]
+        json: bool,
+        /// Filter JSON output with embedded jaq/jq
+        #[arg(long)]
+        jq: Option<String>,
     },
 }
 
@@ -81,6 +106,8 @@ pub async fn run(args: PrArgs) -> Result<(), AppError> {
             head,
             base,
             repo,
+            json,
+            jq,
         } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
             let head = match head {
@@ -104,46 +131,105 @@ pub async fn run(args: PrArgs) -> Result<(), AppError> {
                 }
             };
             let pr = api::create(&owner, &name, &title, &head, &base, body.as_deref()).await?;
-            println!(
-                "Created #{} {} → {}/{}",
-                pr.number,
-                pr.title.as_deref().unwrap_or(""),
-                owner,
-                name,
-            );
+            let out = render::format_output(
+                &pr,
+                json,
+                jq.as_deref(),
+                false,
+                |p| {
+                    format!(
+                        "Created #{} {} → {}/{}",
+                        p.number,
+                        p.title.as_deref().unwrap_or(""),
+                        owner,
+                        name,
+                    )
+                },
+                None::<fn(&PullRequest) -> String>,
+            )?;
+            println!("{out}");
             Ok(())
         }
-        PrArgs::List { repo, limit, json } => {
+        PrArgs::List {
+            repo,
+            limit,
+            json,
+            jq,
+            plain,
+        } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
             let prs = api::list(&owner, &name, crate::github::repo::clamp_limit(limit)).await?;
-            if prs.is_empty() {
+            if prs.is_empty() && !json && jq.is_none() {
                 println!("No open pull requests in {owner}/{name}.");
                 return Ok(());
             }
-            if json {
-                println!("{}", serde_json::to_string_pretty(&prs).unwrap_or_default());
-                return Ok(());
-            }
-            for pr in prs {
-                let login = pr.user.as_ref().map(|u| u.login.as_str()).unwrap_or("-");
-                let head = &pr.head.ref_field;
-                println!(
-                    "#{:<5} {:<60} {head:<24} {}",
-                    pr.number,
-                    pr.title.as_deref().unwrap_or("-"),
-                    login,
-                );
+            let out = render::format_output(
+                &prs,
+                json,
+                jq.as_deref(),
+                plain,
+                |list| {
+                    let mut lines = Vec::new();
+                    for pr in list {
+                        let login = pr.user.as_ref().map(|u| u.login.as_str()).unwrap_or("-");
+                        let head = &pr.head.ref_field;
+                        lines.push(format!(
+                            "#{:<5} {:<60} {head:<24} {}",
+                            pr.number,
+                            pr.title.as_deref().unwrap_or("-"),
+                            login,
+                        ));
+                    }
+                    lines.join("\n")
+                },
+                Some(|list: &Vec<PullRequest>| {
+                    let mut lines = Vec::new();
+                    for pr in list {
+                        let login = pr.user.as_ref().map(|u| u.login.as_str()).unwrap_or("-");
+                        let head = &pr.head.ref_field;
+                        lines.push(format!(
+                            "{}\t{}\t{}\t{}",
+                            pr.number,
+                            pr.title.as_deref().unwrap_or("-"),
+                            head,
+                            login
+                        ));
+                    }
+                    lines.join("\n")
+                }),
+            )?;
+            if !out.is_empty() {
+                println!("{out}");
             }
             Ok(())
         }
-        PrArgs::View { number, repo, json } => {
+        PrArgs::View {
+            number,
+            repo,
+            json,
+            jq,
+            plain,
+        } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
             let pr = api::view(&owner, &name, number).await?;
-            if json {
-                println!("{}", serde_json::to_string_pretty(&pr).unwrap_or_default());
-            } else {
-                print!("{}", render::pull_request(&pr));
-            }
+            let out = render::format_output(
+                &pr,
+                json,
+                jq.as_deref(),
+                plain,
+                render::pull_request,
+                Some(|p: &PullRequest| {
+                    let login = p.user.as_ref().map(|u| u.login.as_str()).unwrap_or("-");
+                    format!(
+                        "{}\t{}\t{}\t{}",
+                        p.number,
+                        p.title.as_deref().unwrap_or("-"),
+                        p.head.ref_field,
+                        login
+                    )
+                }),
+            )?;
+            println!("{out}");
             Ok(())
         }
         PrArgs::Diff { number, repo } => {
@@ -156,6 +242,8 @@ pub async fn run(args: PrArgs) -> Result<(), AppError> {
             number,
             method,
             repo,
+            json,
+            jq,
         } => {
             let (owner, name) = resolve(repo.as_deref()).await?;
             let method = match method.as_str() {
@@ -169,15 +257,21 @@ pub async fn run(args: PrArgs) -> Result<(), AppError> {
                 }
             };
             let merged = api::merge(&owner, &name, number, method).await?;
-            println!(
-                "Merged #{} ({}).",
-                number,
-                if merged.merged {
-                    "merged"
-                } else {
-                    "not merged"
+            let out = render::format_output(
+                &merged,
+                json,
+                jq.as_deref(),
+                false,
+                |m| {
+                    format!(
+                        "Merged #{} ({}).",
+                        number,
+                        if m.merged { "merged" } else { "not merged" }
+                    )
                 },
-            );
+                None::<fn(&octocrab::models::pulls::Merge) -> String>,
+            )?;
+            println!("{out}");
             Ok(())
         }
     }

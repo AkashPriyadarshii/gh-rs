@@ -32,18 +32,35 @@ pub async fn create(name: &str, public: bool) -> Result<RepositorySummary, AppEr
     Ok(repo)
 }
 
-/// Single-page list, sorted pushed_at DESC. `per_page` = clamped --limit (max 100).
-/// ponytail: no Link-header walker — add cursor pagination when repos exceed 100.
-pub async fn list(per_page: u8) -> Result<Vec<RepositorySummary>, AppError> {
+/// Multi-page list, sorted pushed_at DESC. Walks pages up to `limit` (max 1000, default 30).
+pub async fn list(limit: usize) -> Result<Vec<RepositorySummary>, AppError> {
     let client = api_client()?;
-    let mut repos: Vec<RepositorySummary> = client
-        .get(
-            format!("/user/repos?per_page={per_page}&sort=pushed&direction=desc"),
-            None::<&()>,
-        )
-        .await?;
-    // API honors sort=pushed, but belt-and-braces local sort keeps output stable
-    // across API quirks (pushed_at None sorts last).
+    let mut repos = Vec::new();
+    let mut page: u32 = 1;
+
+    while repos.len() < limit {
+        let fetch_size = (limit - repos.len()).min(100);
+        let batch: Vec<RepositorySummary> = client
+            .get(
+                format!("/user/repos?per_page={fetch_size}&page={page}&sort=pushed&direction=desc"),
+                None::<&()>,
+            )
+            .await?;
+
+        if batch.is_empty() {
+            break;
+        }
+
+        let batch_len = batch.len();
+        repos.extend(batch);
+
+        if batch_len < fetch_size {
+            break;
+        }
+        page += 1;
+    }
+
+    repos.truncate(limit);
     repos.sort_by(|a, b| b.pushed_at.cmp(&a.pushed_at));
     Ok(repos)
 }
@@ -56,10 +73,10 @@ pub async fn view(owner: &str, repo: &str) -> Result<RepositorySummary, AppError
     Ok(summary)
 }
 
-/// Clamp user --limit to GitHub's per_page ceiling (1..=100, default 30).
-pub fn clamp_limit(limit: Option<u32>) -> u8 {
+/// Clamp user --limit (1..=1000, default 30).
+pub fn clamp_limit(limit: Option<usize>) -> usize {
     match limit {
-        Some(n) if n >= 1 => n.min(100) as u8,
+        Some(n) if n >= 1 => n.min(1000),
         _ => 30,
     }
 }
@@ -74,7 +91,8 @@ mod tests {
         assert_eq!(clamp_limit(Some(0)), 30);
         assert_eq!(clamp_limit(Some(5)), 5);
         assert_eq!(clamp_limit(Some(100)), 100);
-        assert_eq!(clamp_limit(Some(500)), 100);
+        assert_eq!(clamp_limit(Some(500)), 500);
+        assert_eq!(clamp_limit(Some(2000)), 1000);
     }
 
     #[test]

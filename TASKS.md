@@ -51,5 +51,8 @@
 - [x] ponytail markers: no cursor pagination (all three lists), ps-argv clone note kept
 - [x] README usage + flags documented
 
-## Deferred to v0.2 (explicitly rejected for v0.1)
-- Full cursor pagination (Link-header walker); --jq engine; JSON on mutating cmds; panic=abort; 80%+ coverage + GH_RS_TEST_TOKEN harness
+## v0.2 Sprints — Completed
+- [x] Sprint 1: Embedded `--jq` filter engine (pure-Rust `jaq-core` + `jaq-json` + `jaq-std`) + unified output renderer (`format_output`) with `--plain` TSV mode
+- [x] Sprint 2: Universal `--json` and `--jq` output across mutation commands (`repo create`, `pr create`, `pr merge`, `issue create`, `issue close`)
+- [x] Sprint 3: Multi-page cursor walker (`--limit` 1-1000) for `repo list`, `pr list`, and `issue list`
+- [x] Sprint 4: Integration harness with `GH_RS_TEST_TOKEN` environment fallback, version bump to 0.2.0, zero clippy warnings, tests green

@@ -5,18 +5,33 @@ use crate::github::client::{api_client, http, load_token};
 use octocrab::models::pulls::PullRequest;
 use octocrab::params::pulls::MergeMethod;
 
-/// Single-page open-PR list. `per_page` = clamped --limit (max 100).
-/// ponytail: no cursor pagination — octocrab Page exposes next, wire it when PRs exceed 100.
-pub async fn list(owner: &str, repo: &str, per_page: u8) -> Result<Vec<PullRequest>, AppError> {
+/// Multi-page open-PR list. Walks pages up to `limit` (max 1000, default 30).
+pub async fn list(owner: &str, repo: &str, limit: usize) -> Result<Vec<PullRequest>, AppError> {
     let client = api_client()?;
-    let page = client
+    let per_page = (limit.min(100)) as u8;
+    let mut page = client
         .pulls(owner, repo)
         .list()
         .state(octocrab::params::State::Open)
         .per_page(per_page)
         .send()
         .await?;
-    Ok(page.items)
+
+    let mut prs = Vec::new();
+    loop {
+        let is_empty = page.items.is_empty();
+        prs.extend(page.items);
+        if prs.len() >= limit || is_empty {
+            break;
+        }
+        page = match client.get_page::<PullRequest>(&page.next).await? {
+            Some(next) => next,
+            None => break,
+        };
+    }
+
+    prs.truncate(limit);
+    Ok(prs)
 }
 
 pub async fn view(owner: &str, repo: &str, number: u64) -> Result<PullRequest, AppError> {

@@ -1,6 +1,6 @@
 [package]
 name = "gh-rs"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Small GitHub CLI in Rust: keychain auth, repo/pr/issue commands, JSON output"
 license = "MIT"
@@ -18,6 +18,9 @@ codegen-units = 1
 
 [dependencies]
 clap = { version = "4.6.7", features = ["derive"] }
+jaq-core = "3.1.1"
+jaq-json = { version = "2.0.3", features = ["serde"] }
+jaq-std = "3.0.3"
 keyring = "4.2.0"
 octocrab = "0.54.2"
 reqwest = { version = "0.13.5", features = ["form", "json"] }
