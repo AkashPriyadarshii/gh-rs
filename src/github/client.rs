@@ -22,7 +22,7 @@ static HTTP: OnceLock<reqwest::Client> = OnceLock::new();
 pub fn http() -> reqwest::Client {
     HTTP.get_or_init(|| {
         reqwest::Client::builder()
-            .user_agent("gh-rs/0.2.0")
+            .user_agent("gh-rs/0.3.0")
             .build()
             // Builder with no proxy/TLS overrides can't fail — a panic here would
             // mean a reqwest-internal regression, not user input. OnceLock scopes

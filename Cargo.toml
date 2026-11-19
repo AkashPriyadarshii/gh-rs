@@ -1,8 +1,8 @@
 [package]
 name = "gh-rs"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-description = "Small GitHub CLI in Rust: keychain auth, repo/pr/issue commands, JSON output"
+description = "Fast GitHub CLI in Rust: keychain auth, api/repo/pr/issue/release/gist/status commands, embedded jq filtering, JSON output"
 license = "MIT"
 repository = "https://github.com/AkashPriyadarshii/gh-rs"
 keywords = ["github", "cli", "git", "devtools", "command-line"]

@@ -1,4 +1,4 @@
-//! gh-rs — GitHub CLI in Rust (v0.2).
+//! gh-rs — GitHub CLI in Rust (v0.3).
 
 mod cli;
 mod error;

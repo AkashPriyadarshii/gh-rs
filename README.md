@@ -101,6 +101,20 @@ gh-rs issue create --title T [--body B] [--repo owner/repo] [--json] [--jq EXPR]
 gh-rs issue list [--repo owner/repo] [--limit N] [--json] [--jq EXPR] [--plain]
 gh-rs issue view <number> [--repo owner/repo] [--json] [--jq EXPR] [--plain]
 gh-rs issue close <number> [--repo owner/repo] [--json] [--jq EXPR]
+
+gh-rs api <endpoint> [-X METHOD] [-f K=V] [-F K=V] [-H K:V] [--paginate] [--slurp] [--jq EXPR]
+gh-rs status [--org ORG] [-e EXCLUDE] [--json] [--jq EXPR] [--plain]
+
+gh-rs release list [--repo owner/repo] [--limit N] [--json] [--jq EXPR] [--plain]
+gh-rs release view [tag] [--repo owner/repo] [--json] [--jq EXPR] [--plain]
+gh-rs release create <tag> [--title T] [--notes N] [--draft] [--prerelease] [--repo owner/repo]
+gh-rs release download [tag] [--pattern P] [--dir D] [--repo owner/repo]
+gh-rs release delete <tag> [--repo owner/repo]
+
+gh-rs gist list [--limit N] [--public|--secret] [--json] [--jq EXPR] [--plain]
+gh-rs gist view <id> [--filename F] [--raw] [--json] [--jq EXPR] [--plain]
+gh-rs gist create <files...> [--desc D] [--public] [--filename F]
+gh-rs gist delete <id>
 ```
 
 ### Flags

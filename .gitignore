@@ -1,6 +1,7 @@
 /target
 *.log
 .env
+/gh-cli/
 
 # local skill copies (installed globally at ~/.agents/skills/ — never commit copies)
 /.agents/

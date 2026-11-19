@@ -82,6 +82,96 @@ pub fn pull_request(pr: &PullRequest) -> String {
     out
 }
 
+pub fn status_report(report: &crate::github::status::StatusReport) -> String {
+    let mut out = String::new();
+
+    out.push_str("Assigned Issues\n");
+    if report.assigned_issues.is_empty() {
+        out.push_str("  Nothing here ^_^\n");
+    } else {
+        for item in &report.assigned_issues {
+            out.push_str(&format!("  {}#{} {}\n", item.repo, item.number, item.title));
+        }
+    }
+
+    out.push_str("\nReview Requests\n");
+    if report.review_requests.is_empty() {
+        out.push_str("  Nothing here ^_^\n");
+    } else {
+        for item in &report.review_requests {
+            out.push_str(&format!("  {}#{} {}\n", item.repo, item.number, item.title));
+        }
+    }
+
+    out.push_str("\nCreated Pull Requests\n");
+    if report.my_prs.is_empty() {
+        out.push_str("  Nothing here ^_^\n");
+    } else {
+        for item in &report.my_prs {
+            out.push_str(&format!("  {}#{} {}\n", item.repo, item.number, item.title));
+        }
+    }
+
+    out
+}
+
+pub fn release(r: &crate::github::release::ReleaseSummary) -> String {
+    let mut out = format!(
+        "{} ({})\n",
+        r.name.as_deref().unwrap_or(&r.tag_name),
+        r.tag_name
+    );
+    let kind = if r.draft {
+        "Draft"
+    } else if r.prerelease {
+        "Pre-release"
+    } else {
+        "Latest"
+    };
+    out.push_str(&format!("  type: {}\n", kind));
+    out.push_str(&format!(
+        "  published: {}\n",
+        r.published_at.as_deref().unwrap_or("-")
+    ));
+    out.push_str(&format!("  url: {}\n", r.html_url));
+    if let Some(body) = &r.body {
+        out.push_str(&format!("\n  {}\n", body.replace('\n', "\n  ")));
+    }
+    if !r.assets.is_empty() {
+        out.push_str("\n  Assets:\n");
+        for a in &r.assets {
+            let mb = a.size as f64 / 1_048_576.0;
+            out.push_str(&format!(
+                "    {} ({:.1} MB, {} downloads)\n",
+                a.name, mb, a.download_count
+            ));
+        }
+    }
+    out
+}
+
+pub fn gist(g: &crate::github::gist::GistSummary) -> String {
+    let mut out = format!(
+        "{} ({})\n",
+        g.description.as_deref().unwrap_or("No description"),
+        g.id
+    );
+    let vis = if g.public { "public" } else { "secret" };
+    out.push_str(&format!("  visibility: {}\n", vis));
+    out.push_str(&format!("  updated:    {}\n", g.updated_at));
+    out.push_str(&format!("  url:        {}\n", g.html_url));
+    out.push_str("\n  Files:\n");
+    for (name, f) in &g.files {
+        out.push_str(&format!(
+            "    {} ({} bytes, {})\n",
+            name,
+            f.size.unwrap_or(0),
+            f.language.as_deref().unwrap_or("-")
+        ));
+    }
+    out
+}
+
 /// Evaluates a jq filter string on any serializable data using the embedded jaq engine.
 pub fn evaluate_jq<T: serde::Serialize>(data: &T, filter_str: &str) -> Result<String, AppError> {
     use jaq_core::load::{Arena, File, Loader};

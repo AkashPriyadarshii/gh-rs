@@ -56,3 +56,10 @@
 - [x] Sprint 2: Universal `--json` and `--jq` output across mutation commands (`repo create`, `pr create`, `pr merge`, `issue create`, `issue close`)
 - [x] Sprint 3: Multi-page cursor walker (`--limit` 1-1000) for `repo list`, `pr list`, and `issue list`
 - [x] Sprint 4: Integration harness with `GH_RS_TEST_TOKEN` environment fallback, version bump to 0.2.0, zero clippy warnings, tests green
+
+## v0.3 Sprints — Parity & Extension Batch (Completed)
+- [x] Sprint 1: `gh-rs api` escape hatch — arbitrary REST & GraphQL endpoint execution, placeholder expansion (`{owner}`, `{repo}`, `{branch}`), automatic RFC 5988 Link pagination (`--paginate`, `--slurp`), typed fields (`-F`, `-f`), custom headers (`-H`), body upload (`--input`), and embedded `jaq` filtering.
+- [x] Sprint 2: `gh-rs status` work dashboard — multi-query aggregation across repositories for assigned issues, authored pull requests, and review requests with `--org` and `--exclude` filters.
+- [x] Sprint 3: `gh-rs release` suite — release listing, viewing (by tag or latest), creation with pre-release/draft flags, tag-based deletion, and binary asset downloading (`download`) with pattern filtering.
+- [x] Sprint 4: `gh-rs gist` suite — gist listing with public/secret filtering, viewing (full details or `--raw` file extraction), multi-file creation with stdin support, and deletion.
+- [x] Sprint 5: Bump version to 0.3.0, clean `cargo fmt`, zero `cargo clippy -- -D warnings` warnings, 25 tests green.

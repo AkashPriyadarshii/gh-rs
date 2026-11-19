@@ -1,7 +1,16 @@
 # STATE — gh-rs
 
 ## Current
-Phase: v0.1.0 tagged + pushed (Sep 15 2026). Repo PUBLIC. Published to crates.io (`cargo install gh-rs`). Premium marketing site live at `https://akashpriyadarshii.github.io/gh-rs/`. Icon set shipped (README header renders, social preview deferred to owner click). Next: GitHub Release v0.1.0 asset packaging.
+Phase: v0.3.0 parity & extension batch implemented. Added `api` (raw REST/GraphQL + Link pagination + jaq), `status` (cross-repo dashboard), `release` (list/view/create/delete/download), and `gist` (list/view/create/delete). Zero warnings on `cargo clippy -- -D warnings`, 25 unit tests green, `cargo fmt` clean. Next: tagged release packaging.
+
+## Verify log (v0.3.0 parity batch)
+- fmt + clippy -D warnings clean, 25 tests pass
+- api endpoint normalization: {owner}, {repo}, {branch} placeholders + graphql + absolute URLs ✓
+- api RFC 5988 Link header extraction and multi-page pagination ✓
+- typed field parsing: string, integer, boolean, null, json ✓
+- status multi-query aggregation: assigned issues, created PRs, review requests with exclude filter ✓
+- release list, view, create, delete, and pattern-based binary asset downloading ✓
+- gist multi-file create, stdin "-" pipe support, raw file extraction, public/secret filters ✓
 
 ## Verify log (Sep 15 2026, post-audit)
 - fmt + clippy -D warnings + 11 tests pass, cargo doc zero warnings
