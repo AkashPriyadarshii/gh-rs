@@ -17,18 +17,26 @@ src/
   main.rs        entry point, clap parse, dispatch
   cli/
     mod.rs       clap Command/Args defs
-    auth.rs
-    repo.rs
-    pr.rs
-    issue.rs
+    api.rs       api endpoint execution
+    auth.rs      auth login/logout/status
+    gist.rs      gist operations
+    issue.rs     issue operations
+    pr.rs        pull request operations
+    release.rs   release operations
+    repo.rs      repo operations
+    status.rs    work status dashboard
   github/
-    client.rs    octocrab client init, token injection
+    api.rs       raw endpoint & Link header engine
     auth.rs      OAuth device flow
-    repo.rs
-    pr.rs
-    issue.rs
-  render.rs      shared fetch→render helper (plain text) — used by all view/diff commands
-  git.rs         subprocess wrapper (clone, checkout)
+    client.rs    octocrab client init, token injection, shared reqwest client
+    gist.rs      gist API models & CRUD
+    issue.rs     issue API models & CRUD
+    pr.rs        pull request API calls
+    release.rs   release API models, CRUD & downloads
+    repo.rs      repository API calls & pagination
+    status.rs    search query aggregation
+  render.rs      shared format_output with embedded jaq/jq, JSON, plain TSV
+  git.rs         subprocess wrapper (clone, checkout, remote parse)
   error.rs       unified error type
 ```
 

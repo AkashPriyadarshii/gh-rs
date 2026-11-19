@@ -22,3 +22,11 @@ gh repo edit --visibility public
 2. `gh-rs auth login` + one real command round-trip from the fresh machine.
 3. Confirm GitHub repo has no accidental private data (unpushed refs, artifacts).
 4. Published to crates.io: `cargo publish` → `gh-rs v0.1.0` live. Installable via `cargo install gh-rs`.
+
+## v0.3.0 Release Verification Checklist
+1. `cargo check` and `cargo fmt --check` pass with zero errors.
+2. `cargo clippy --all-targets -- -D warnings` passes with zero warnings.
+3. `cargo test` passes 100% of test suites.
+4. `cargo build --release` produces optimized stripped binary.
+5. `git diff --check` and secret scans are clean.
+6. Tag v0.3.0 ready for publishing: `cargo publish`.

@@ -139,11 +139,15 @@ GitHub CLI in Rust
 Usage: gh-rs.exe <COMMAND>
 
 Commands:
-  auth   Manage GitHub authentication
-  repo   Manage repositories
-  pr     Manage pull requests
-  issue  Manage issues
-  help   Print this message or the help of the given subcommand(s)
+  api      Make an authenticated GitHub API request
+  auth     Manage GitHub authentication
+  gist     Manage gists
+  status   Print relevant issues, PRs, and review requests across repositories
+  repo     Manage repositories
+  pr       Manage pull requests
+  release  Manage releases
+  issue    Manage issues
+  help     Print this message or the help of the given subcommand(s)
 
 Options:
   -h, --help     Print help
@@ -272,25 +276,33 @@ Per-command latency is dominated by TLS plus API round trip (~500ms of the ~600m
 src/main.rs            # tokio current_thread entry, error print
 src/error.rs           # AppError enum, all fallible paths return it
 src/cli/mod.rs         # clap Command enum + dispatch
+src/cli/api.rs         # api raw REST/GraphQL endpoint execution
 src/cli/auth.rs        # auth login/logout/status
-src/cli/repo.rs        # repo clone/create/list/view + shared split_repo
-src/cli/pr.rs          # pr create/list/view/diff/merge
+src/cli/gist.rs        # gist list/view/create/delete
 src/cli/issue.rs       # issue create/list/view/close
+src/cli/pr.rs          # pr create/list/view/diff/merge
+src/cli/release.rs     # release list/view/create/download/delete
+src/cli/repo.rs        # repo clone/create/list/view + shared split_repo
+src/cli/status.rs      # status multi-repo dashboard
 src/github/mod.rs      # module list
-src/github/client.rs   # keyring token, octocrab builder, cached reqwest client
+src/github/api.rs      # arbitrary endpoint normalization, pagination, fields
 src/github/auth.rs     # OAuth device flow + login probe
-src/github/repo.rs     # RepositorySummary + CRUD + clamp_limit
-src/github/pr.rs       # typed pulls + raw REST for create/diff
+src/github/client.rs   # keyring token, octocrab builder, cached reqwest client
+src/github/gist.rs     # GistSummary + CRUD operations
 src/github/issue.rs    # IssueSummary + raw REST (octocrab Issue overflows stack)
+src/github/pr.rs       # typed pulls + raw REST for create/diff
+src/github/release.rs  # ReleaseSummary + CRUD + asset downloads
+src/github/repo.rs     # RepositorySummary + CRUD + clamp_limit
+src/github/status.rs   # multi-query search aggregation
 src/git.rs             # git subprocess: clone with Bearer header, origin parse
-src/render.rs          # plain-text renderers for repo/pr/issue view
+src/render.rs          # unified format_output with embedded jaq/jq and plain text
 ```
 
 Tokens live in the OS credential store (Windows Credential Manager, macOS Keychain). The OAuth client ID is public by design, same model as `gh`.
 
 ## Non-goals
 
-v0.1 refuses: full `gh` parity (actions, releases, gists, secrets, search), TUI or pager, cursor pagination past `--limit 100`, `--jq` filtering, JSON on mutating commands, `panic="abort"`, GraphQL.
+v0.3 refuses: heavy interactive TUI/pager widgets, background daemons, bloated multi-MB telemetry bundles, `panic="abort"`.
 
 ## Ecosystem
 
@@ -302,11 +314,12 @@ v0.1 refuses: full `gh` parity (actions, releases, gists, secrets, search), TUI 
 ## Author
 
 **Akash Priyadarshi** (Patna, Bihar, India)
+Akash Priyadarshi, self-taught developer & open-source builder from Patna, Bihar, India. Rust systems tooling, AI agents, Android internals.
 
-[GitHub](https://github.com/AkashPriyadarshii) · [Portfolio](https://akashpriyadarshi.vercel.app) · [LinkedIn](https://linkedin.com/in/akashpriyadarshii) · [Resume](https://akashpriyadarshii.github.io/Resume/)
+[GitHub](https://github.com/AkashPriyadarshii) · [Portfolio](https://akashpriyadarshi.is-a.dev) · [LinkedIn](https://linkedin.com/in/akashpriyadarshii) · [Resume](https://akashpriyadarshii.github.io/Resume)
 
 ## Social
 
-[X / Twitter](https://x.com/Akash__ydv001) · [Threads](https://www.threads.com/@free_dev2026) · [Instagram](https://www.instagram.com/akash.priyadarshii/) · [Reddit](https://reddit.com/user/akashpriyadarshi)
+[X / Twitter](https://x.com/Akash__ydv001) · [Threads](https://threads.net/@akash.priyadarshii) · [Instagram](https://instagram.com/akash.priyadarshii) · [Reddit](https://reddit.com/user/akashpriyadarshii)
 
-*Rust CLI for GitHub: auth, repos, pull requests, issues. Small on purpose.*
+*Rust CLI for GitHub: auth, api, repo, pr, issue, release, gist, status. Built in Rust with zero bloat.*
