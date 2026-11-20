@@ -2,6 +2,10 @@
 *.log
 .env
 /gh-cli/
+/docs/
+/memory/
+*PUBLISH.md
+*publish.md
 
 # local skill copies (installed globally at ~/.agents/skills/ — never commit copies)
 /.agents/
